@@ -9,7 +9,6 @@ services:
           path: ./package.json
         - action: rebuild
           path: ./src/adapter/pg/orm/schema.ts
-          target: /app/src/adapter/pg/orm/schema.ts
 
     # pg container가 생성되고 npm run drizzle:push를 통해 schema 생성
     command: >
