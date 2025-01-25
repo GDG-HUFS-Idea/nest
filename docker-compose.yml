@@ -1,0 +1,36 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile.app
+    develop:
+      watch:
+        - action: rebuild
+          path: ./package.json
+        - action: rebuild
+          path: ./src/adapter/pg/orm/schema.ts
+          target: /app/src/adapter/pg/orm/schema.ts
+
+    # pg container가 생성되고 npm run drizzle:push를 통해 schema 생성
+    command: >
+      sh -c "
+        until npm run drizzle:push; do
+          sleep 7;
+        done;
+        npm run start:dev
+      "
+    volumes:
+      - ./src:/app/src
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    depends_on:
+      - pg
+
+  pg:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PW}
+      - POSTGRES_DB=${PG_DB}
+    ports:
+      - ${PG_PORT}:5432
