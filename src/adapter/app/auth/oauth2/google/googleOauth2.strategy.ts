@@ -1,7 +1,4 @@
-import {
-  Strategy,
-  VerifyCallback,
-} from 'passport-google-oauth20';
+import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
@@ -12,49 +9,30 @@ import { Builder } from 'builder-pattern';
 import { Username } from 'src/domain/vo/username';
 import { ImgUrl } from 'src/domain/vo/imgUrl';
 import { Email } from 'src/domain/vo/email';
-import {
-  USER_RDB_REPO,
-  UserRdbRepoPort,
-} from 'src/port/out/rdb/user.rdb.repo.port';
+import { USER_RDB_REPO, UserRdbRepositoryPort } from 'src/port/out/rdb/user.rdb.repository.port';
 
 @Injectable()
-export class GoogleOauth2Strategy extends PassportStrategy(
-  Strategy,
-  'google',
-) {
+export class GoogleOauth2Strategy extends PassportStrategy(Strategy, 'google') {
   constructor(
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     @Inject(USER_RDB_REPO)
-    private readonly userRdbRepo: UserRdbRepoPort,
+    private readonly userRdbRepo: UserRdbRepositoryPort,
   ) {
     super({
       clientID: configService.getOrThrow('GOOGLE_CLIENT_ID'),
-      clientSecret: configService.getOrThrow(
-        'GOOGLE_CLIENT_SECRET',
-      ),
-      callbackURL: configService.getOrThrow(
-        'GOOGLE_REDIRECT_URL',
-      ),
+      clientSecret: configService.getOrThrow('GOOGLE_CLIENT_SECRET'),
+      callbackURL: configService.getOrThrow('GOOGLE_REDIRECT_URL'),
       scope: ['email', 'profile'],
     });
   }
 
-  async validate(
-    accessToken: string,
-    refreshToken: string,
-    profile: any,
-    done: VerifyCallback,
-  ) {
-    const {
-      name: rawName,
-      email: rawEmail,
-      picture: rawPircture,
-    } = profile._json;
+  async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback) {
+    const { name: rawName, email: rawEmail, picture: rawPircture } = profile._json;
     const email = Email.create(rawEmail);
 
     // 기존 사용자 조회
-    let user = await this.userRdbRepo.findUser().byEmail(email);
+    let user = await this.userRdbRepo.findUserByEmail(email);
 
     // 신규 사용자인 경우 생성
     if (!user) {

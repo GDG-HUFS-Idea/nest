@@ -4,13 +4,8 @@ import { RdbInstance } from 'src/shared/type/rdbInstance.type';
 
 export const USER_RDB_REPO = Symbol('USER_RDB_REPO');
 
-export interface UserRdbRepoPort {
-  findUser(): {
-    byEmail(
-      email: Email,
-      instance?: RdbInstance,
-    ): Promise<User | undefined>;
-  };
-
+export interface UserRdbRepositoryPort {
   saveUser(user: User, instance?: RdbInstance): Promise<User>;
+
+  findUserByEmail(email: Email, instance?: RdbInstance): Promise<User | undefined>;
 }

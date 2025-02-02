@@ -8,22 +8,16 @@ import { z } from 'zod';
 
 // "어떻게" 인증을 해결할지
 @Injectable()
-export class JwtStrategy extends PassportStrategy(
-  Strategy,
-  'jwt',
-) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private readonly configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.getOrThrow('APP_JWT_SECRET'),
+      secretOrKey: configService.getOrThrow('JWT_SECRET'),
     });
   }
 
-  async validate(payload: {
-    id: z.infer<typeof Id.schema>;
-    roles: z.infer<typeof Role.schema>[];
-  }) {
+  async validate(payload: { id: z.infer<typeof Id.schema>; roles: z.infer<typeof Role.schema>[] }) {
     return {
       id: Id.create(payload.id),
       roles: payload.roles.map((role) => Role.create(role)),

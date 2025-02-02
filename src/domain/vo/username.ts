@@ -4,9 +4,7 @@ import { z } from 'zod';
 export class Username {
   static schema = z.string();
 
-  private constructor(
-    readonly value: z.infer<typeof Username.schema>,
-  ) {}
+  private constructor(readonly value: z.infer<typeof Username.schema>) {}
 
   static isValid(value: z.infer<typeof Username.schema>) {
     try {
@@ -18,8 +16,7 @@ export class Username {
   }
 
   static create(value: z.infer<typeof Username.schema>) {
-    if (!Username.isValid(value))
-      throw new BadRequestException();
+    if (!Username.isValid(value)) throw new BadRequestException();
     return new Username(value);
   }
 }

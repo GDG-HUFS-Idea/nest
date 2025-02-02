@@ -8,28 +8,35 @@ services:
         - action: rebuild
           path: ./package.json
         - action: rebuild
-          path: ./src/adapter/pg/orm/schema.ts
-
-    # pg container가 생성되고 npm run drizzle:push를 통해 schema 생성
-    command: >
-      sh -c "
-        until npm run drizzle:push; do
-          sleep 7;
-        done;
-        npm run start:dev
-      "
+          path: ./src/adapter/postgres/migration
+        - action: rebuild
+          path: ./src/adapter/postgres/drizzle
     volumes:
       - ./src:/app/src
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     ports:
       - ${APP_PORT}:${APP_PORT}
     depends_on:
-      - pg
+      postgres:
+        condition: service_healthy
 
-  pg:
-    image: postgres:15
+  postgres:
+    image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=${PG_USER}
-      - POSTGRES_PASSWORD=${PG_PW}
-      - POSTGRES_DB=${PG_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     ports:
-      - ${PG_PORT}:5432
+      - ${POSTGRES_PORT}:5432
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 3s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+      start_interval: 3s
+
+volumes:
+  postgres_data:

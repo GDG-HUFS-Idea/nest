@@ -1,10 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { UserRdbRepoPort } from 'src/port/out/rdb/user.rdb.repo.port';
-import * as schema from '../orm/schema';
-import {
-  RDB_SERVICE,
-  RdbServicePort,
-} from 'src/port/out/rdb/rdb.service.port';
+import { UserRdbRepositoryPort } from 'src/port/out/rdb/user.rdb.repository.port';
+import * as schema from '../drizzle/schema';
+import { RDB_SERVICE, RdbServicePort } from 'src/port/out/rdb/rdb.service.port';
 import { User } from 'src/domain/entity/user';
 import { and, eq, InferSelectModel, isNull } from 'drizzle-orm';
 import { Builder } from 'builder-pattern';
@@ -14,19 +11,15 @@ import { Username } from 'src/domain/vo/username';
 import { Role } from 'src/domain/vo/role';
 import { ImgUrl } from 'src/domain/vo/imgUrl';
 import { Timestamp } from 'src/domain/vo/timestamp';
-import { RdbInstance } from 'src/shared/type/rdbInstance.type';
 
 @Injectable()
-export class UserPgRepo implements UserRdbRepoPort {
+export class UserPostgresRepository implements UserRdbRepositoryPort {
   constructor(
     @Inject(RDB_SERVICE)
     private readonly rdbService: RdbServicePort,
   ) {}
 
-  async saveUser(
-    user: User,
-    instance = this.rdbService.getInstance(),
-  ): Promise<User> {
+  async saveUser(user: User, instance = this.rdbService.getInstance()): Promise<User> {
     const [row] = await instance
       .insert(schema.users)
       .values({
@@ -40,32 +33,15 @@ export class UserPgRepo implements UserRdbRepoPort {
     return this.mapToUser(row);
   }
 
-  findUser(): {
-    byEmail(
-      email: Email,
-      instance: RdbInstance,
-    ): Promise<User | undefined>;
-  } {
-    return {
-      byEmail: async (
-        email: Email,
-        instance = this.rdbService.getInstance(),
-      ): Promise<User | undefined> => {
-        const row = await instance.query.users.findFirst({
-          where: and(
-            eq(schema.users.email, email.value),
-            isNull(schema.users.deletedAt),
-          ),
-        });
+  async findUserByEmail(email: Email, instance = this.rdbService.getInstance()): Promise<User | undefined> {
+    const row = await instance.query.users.findFirst({
+      where: and(eq(schema.users.email, email.value), isNull(schema.users.deletedAt)),
+    });
 
-        return row && this.mapToUser(row);
-      },
-    };
+    return row && this.mapToUser(row);
   }
 
-  private mapToUser(
-    row: InferSelectModel<typeof schema.users>,
-  ): User {
+  private mapToUser(row: InferSelectModel<typeof schema.users>): User {
     return Builder(User)
       .id(Id.create(row.id))
       .email(Email.create(row.email))
@@ -74,11 +50,7 @@ export class UserPgRepo implements UserRdbRepoPort {
       .profileImgUrl(ImgUrl.create(row.profileImgUrl))
       .createdAt(Timestamp.create(row.createdAt))
       .updatedAt(Timestamp.create(row.updatedAt))
-      .deletedAt(
-        row.updatedAt
-          ? Timestamp.create(row.updatedAt)
-          : undefined,
-      )
+      .deletedAt(row.updatedAt ? Timestamp.create(row.updatedAt) : undefined)
       .build();
   }
 }

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { PgModule } from '../pg/pg.module';
+import { PgModule } from '../postgres/postgres.module';
 import { GoogleOauth2Strategy } from './auth/oauth2/google/googleOauth2.strategy';
 import { GoogleOauth2Guard } from './auth/oauth2/google/googleOauth2.guard';
 import { JwtGuard } from './auth/jwt/jwt.guard';
@@ -19,7 +19,7 @@ import { Ouath2Controller } from './controller/oauth2.controller';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.getOrThrow('APP_JWT_SECRET'),
+        secret: configService.getOrThrow('JWT_SECRET'),
         signOptions: { expiresIn: '7d' },
       }),
       inject: [ConfigService],
