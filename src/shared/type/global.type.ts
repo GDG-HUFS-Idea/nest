@@ -1,5 +1,5 @@
-import { Id } from 'src/domain/vo/id';
-import { Role } from 'src/domain/vo/role';
+import { Id } from 'src/domain/vo/shared/id';
+import { Role } from 'src/domain/vo/user/role';
 
 declare global {
   interface Client {

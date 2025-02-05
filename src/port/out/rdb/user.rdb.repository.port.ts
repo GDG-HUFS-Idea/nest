@@ -1,5 +1,5 @@
 import { User } from 'src/domain/entity/user';
-import { Email } from 'src/domain/vo/email';
+import { Email } from 'src/domain/vo/user/email';
 import { RdbInstance } from 'src/shared/type/rdbInstance.type';
 
 export const USER_RDB_REPO = Symbol('USER_RDB_REPO');

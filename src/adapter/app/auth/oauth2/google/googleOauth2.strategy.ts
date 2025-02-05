@@ -2,14 +2,14 @@ import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { Role } from 'src/domain/vo/role';
+import { Role } from 'src/domain/vo/user/role';
 import { User } from 'src/domain/entity/user';
 import { JwtService } from '@nestjs/jwt';
 import { Builder } from 'builder-pattern';
-import { Username } from 'src/domain/vo/username';
-import { ImgUrl } from 'src/domain/vo/imgUrl';
-import { Email } from 'src/domain/vo/email';
+import { Username } from 'src/domain/vo/user/username';
+import { Email } from 'src/domain/vo/user/email';
 import { USER_RDB_REPO, UserRdbRepositoryPort } from 'src/port/out/rdb/user.rdb.repository.port';
+import { SubscriptionType } from 'src/domain/vo/user/subscriptionType';
 
 @Injectable()
 export class GoogleOauth2Strategy extends PassportStrategy(Strategy, 'google') {
@@ -32,24 +32,24 @@ export class GoogleOauth2Strategy extends PassportStrategy(Strategy, 'google') {
     const email = Email.create(rawEmail);
 
     // 기존 사용자 조회
-    let user = await this.userRdbRepo.findUserByEmail(email);
+    let foundUser = await this.userRdbRepo.findUserByEmail(email);
 
     // 신규 사용자인 경우 생성
-    if (!user) {
+    if (!foundUser) {
       const newUser = Builder(User)
         .email(email)
         .username(Username.create(rawName))
         .roles([Role.create('general')])
-        .profileImgUrl(ImgUrl.create(rawPircture))
+        .subscriptionType(SubscriptionType.create('free'))
         .build();
 
-      user = await this.userRdbRepo.saveUser(newUser);
+      foundUser = await this.userRdbRepo.saveUser(newUser);
     }
 
-    // JWT 토큰 생성
+    // jwt 토큰 생성
     const jwtToken = this.jwtService.sign({
-      id: user.id!.value,
-      roles: user.roles.map((role) => role.value),
+      id: foundUser.id!.value,
+      roles: foundUser.roles.map((role) => role.value),
     });
 
     done(null, { token: jwtToken });

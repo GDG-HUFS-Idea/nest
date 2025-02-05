@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Id } from 'src/domain/vo/id';
-import { Role } from 'src/domain/vo/role';
+import { Id } from 'src/domain/vo/shared/id';
+import { Role } from 'src/domain/vo/user/role';
 import { z } from 'zod';
 
 // "어떻게" 인증을 해결할지

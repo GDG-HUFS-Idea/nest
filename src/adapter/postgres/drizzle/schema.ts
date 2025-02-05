@@ -5,11 +5,13 @@ export const users = pgTable('users', {
   email: varchar('email').notNull().unique(),
   username: varchar('username').notNull(),
   roles: varchar('roles').array().$type<Array<'general' | 'manager' | 'admin'>>().notNull(),
-  profileImgUrl: varchar('profile_img_url').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at')
+  subscriptionType: varchar('subscription_type').$type<'free' | 'pro'>().notNull(),
+  subscriptionStartDate: timestamp('subscription_start_date'),
+  subscriptionEndDate: timestamp('subscription_end_date'),
+  createdDate: timestamp('created_date').defaultNow().notNull(),
+  lastModifiedDate: timestamp('last_modified_date')
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
-  deletedAt: timestamp('deleted_at'),
+  deletedDate: timestamp('deleted_date'),
 });

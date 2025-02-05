@@ -4,9 +4,7 @@ import { z } from 'zod';
 export class Role {
   static schema = z.enum(['general', 'manager', 'admin']);
 
-  private constructor(
-    readonly value: z.infer<typeof Role.schema>,
-  ) {}
+  private constructor(readonly value: z.infer<typeof Role.schema>) {}
 
   static isValid(value: z.infer<typeof Role.schema>) {
     try {
