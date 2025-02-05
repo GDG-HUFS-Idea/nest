@@ -27,8 +27,12 @@ export class PostgresService implements RdbServicePort {
     return this.instance;
   }
 
-  async transaction<T>(callback: (instance: RdbInstance) => Promise<T>): Promise<T> {
-    const db = this.getInstance();
-    return await db.transaction(callback);
+  async transaction<T>(
+    callback: (
+      transcation: Extract<RdbInstance, Parameters<Parameters<RdbInstance['transaction']>[0]>[0]>,
+    ) => Promise<T>,
+  ): Promise<T> {
+    const instance = this.getInstance();
+    return await instance.transaction(callback);
   }
 }
