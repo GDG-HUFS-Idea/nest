@@ -6,7 +6,7 @@ import { Id } from 'src/domain/vo/shared/id';
 import { Role } from 'src/domain/vo/user/role';
 import { z } from 'zod';
 
-// "어떻게" 인증을 해결할지
+// 어떻게 사용자 인증을 해결할지
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(private readonly configService: ConfigService) {

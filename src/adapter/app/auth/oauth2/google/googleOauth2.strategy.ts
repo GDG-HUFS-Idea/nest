@@ -17,7 +17,7 @@ export class GoogleOauth2Strategy extends PassportStrategy(Strategy, 'google') {
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
     @Inject(USER_RDB_REPO)
-    private readonly userRdbRepo: UserRdbRepositoryPort,
+    private readonly userRdbRepository: UserRdbRepositoryPort,
   ) {
     super({
       clientID: configService.getOrThrow('GOOGLE_CLIENT_ID'),
@@ -28,11 +28,11 @@ export class GoogleOauth2Strategy extends PassportStrategy(Strategy, 'google') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback) {
-    const { name: rawName, email: rawEmail, picture: rawPircture } = profile._json;
+    const { name: rawName, email: rawEmail } = profile._json;
     const email = Email.create(rawEmail);
 
     // 기존 사용자 조회
-    let foundUser = await this.userRdbRepo.findUserByEmail(email);
+    let foundUser = await this.userRdbRepository.findUserByEmail(email);
 
     // 신규 사용자인 경우 생성
     if (!foundUser) {
@@ -43,7 +43,7 @@ export class GoogleOauth2Strategy extends PassportStrategy(Strategy, 'google') {
         .subscriptionType(SubscriptionType.create('free'))
         .build();
 
-      foundUser = await this.userRdbRepo.saveUser(newUser);
+      foundUser = await this.userRdbRepository.saveUser(newUser);
     }
 
     // jwt 토큰 생성

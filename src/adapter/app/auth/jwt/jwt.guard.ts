@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
-// "언제" 인증을 적용할지
+// 요청을 혀용 혹은 거부할지
 @Injectable()
 export class JwtGuard extends AuthGuard('jwt') {}
