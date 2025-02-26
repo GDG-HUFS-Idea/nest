@@ -1,13 +1,17 @@
-import { Id } from 'src/domain/vo/shared/id';
-import { Role } from 'src/domain/vo/user/role';
+import { Permission } from './enum.type'
 
 declare global {
-  interface Client {
-    id: Id;
-    roles: Role[];
+  interface User {
+    id: number
+    permissions: Permission[]
+  }
+
+  interface OauthUser {
+    name: string
+    email: string
   }
 
   interface Request {
-    user?: Client;
+    user?: User | OauthUser
   }
 }
