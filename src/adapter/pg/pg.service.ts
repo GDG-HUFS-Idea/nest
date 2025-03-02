@@ -23,7 +23,11 @@ export class PgService {
     this.client = drizzle(this.pool, { schema })
   }
 
-  getClient(): RdbClient {
+  getClient() {
     return this.client
+  }
+
+  async close() {
+    await this.pool.end()
   }
 }

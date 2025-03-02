@@ -12,5 +12,5 @@ export interface UserAgreementRepoPort {
   saveMany(param: {
     userAgreements: UserAgreement[]
     ctx?: RdbClient
-  }): Promise<UserAgreement[]>
+  }): Promise<UserAgreement[] | null>
 }

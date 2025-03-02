@@ -20,7 +20,9 @@ export class UserAgreementRepo implements UserAgreementRepoPort {
   async saveMany(param: {
     userAgreements: UserAgreement[]
     ctx?: RdbClient
-  }): Promise<UserAgreement[]> {
+  }): Promise<UserAgreement[] | null> {
+    if (param.userAgreements.length === 0) return null
+
     const ctx = param.ctx ?? this.pgService.getClient()
 
     const rows = await ctx

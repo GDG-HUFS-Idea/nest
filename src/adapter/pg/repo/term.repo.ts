@@ -29,7 +29,7 @@ export class TermRepo implements TermRepoPort {
       ),
     })
 
-    if (!rows) return null
+    if (rows.length === 0) return null
 
     return rows.map(mapTerm)
   }
