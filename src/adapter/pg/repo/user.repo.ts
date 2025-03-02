@@ -32,7 +32,7 @@ export class UserRepo implements UserRepoPort {
     return mapUser(row)
   }
 
-  async saveOne(param: { user: User; ctx: RdbClient }): Promise<User> {
+  async saveOne(param: { user: User; ctx?: RdbClient }): Promise<User> {
     const ctx = param.ctx ?? this.pgService.getClient()
 
     const [row] = await ctx.insert(schema.users).values(param.user).returning()

@@ -9,12 +9,14 @@ import { USER_AGREEMENT_REPO } from 'src/port/out/repo/userAgreement.repo.port'
 import { TERM_REPO } from 'src/port/out/repo/term.repo.port'
 import { TRX_SERVICE } from 'src/port/out/service/trx.service.port'
 import { TrxService } from './trx.service'
+import { SeedService } from './seed.service'
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true })],
 
   providers: [
     PgService,
+    SeedService,
     { provide: TRX_SERVICE, useClass: TrxService },
 
     { provide: USER_REPO, useClass: UserRepo },

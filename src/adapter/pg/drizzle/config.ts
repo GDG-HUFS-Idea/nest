@@ -1,9 +1,6 @@
-import { defineConfig } from 'drizzle-kit';
-import path from 'path';
-
-const getHost = () => {
-  return require('fs').existsSync('/.dockerenv') ? process.env.PG_HOST! : 'localhost';
-};
+import { defineConfig } from 'drizzle-kit'
+import { getPgHost } from '../helper/getPgHost'
+import path from 'path'
 
 export default defineConfig({
   schema: path.join(__dirname, 'schema.ts'),
@@ -14,9 +11,9 @@ export default defineConfig({
   dbCredentials: {
     user: process.env.PG_USER!,
     password: process.env.PG_PASSWORD!,
-    host: getHost(),
+    host: getPgHost(),
     port: Number(process.env.PG_PORT!),
     database: process.env.PG_DB!,
     ssl: false,
   },
-});
+})
