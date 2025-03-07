@@ -26,7 +26,7 @@ export type GetTermsUsecaseRes = {
     title: string
     content: string
     is_required: boolean
-    writed_at: Date
+    written_at: Date
   }[]
   missing_term_ids?: number[]
 }

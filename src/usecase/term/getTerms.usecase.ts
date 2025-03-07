@@ -50,7 +50,7 @@ export class GetTermsUsecase implements GetTermsUsecasePort {
       title: term.title,
       content: term.content,
       is_required: term.isRequired,
-      writed_at: term.createdAt,
+      written_at: term.createdAt,
     }))
   }
 

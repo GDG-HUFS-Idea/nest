@@ -64,7 +64,7 @@ describe('GetTermsUsecase', () => {
     expect(result.terms[0].title).toBe('서비스 이용약관')
     expect(result.terms[0].content).toBe('약관 내용')
     expect(result.terms[0].is_required).toBe(true)
-    expect(result.terms[0].writed_at).toEqual(new Date('2023-01-01'))
+    expect(result.terms[0].written_at).toEqual(new Date('2023-01-01'))
 
     expect(result.terms[1].id).toBe(2)
     expect(result.terms[1].type).toBe('privacy_policy')
