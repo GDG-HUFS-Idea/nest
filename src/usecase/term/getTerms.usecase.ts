@@ -1,4 +1,10 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadGatewayException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
+import { Term } from 'src/domain/term'
 import {
   GetTermsUsecaseDto,
   GetTermsUsecaseRes,
@@ -11,29 +17,46 @@ export class GetTermsUsecase implements GetTermsUsecasePort {
   constructor(@Inject(TERM_REPO) private readonly termRepo: TermRepoPort) {}
 
   async exec(dto: GetTermsUsecaseDto): Promise<GetTermsUsecaseRes> {
-    // 1. 요청된 ID로 약관 정보 조회
-    const terms = await this.termRepo.findManyByIds({ ids: dto.ids })
+    const terms = await this.retrieveTermsByIds(dto.ids)
+    const missingIds = this.findMissingTermIds(dto.ids, terms)
+
+    const formattedTerms = this.formatTermsForRes(terms)
+
+    const res = { terms: formattedTerms }
+
+    if (missingIds.length > 0) {
+      res['missing_term_ids'] = missingIds
+    }
+
+    return res
+  }
+
+  // ID로 약관 정보 조회
+  private async retrieveTermsByIds(ids: number[]) {
+    const terms = await this.termRepo.findManyByIds({ ids }).catch(() => {
+      throw new BadGatewayException()
+    })
+
     if (!terms) throw new NotFoundException()
 
-    // 2. 응답 데이터 구성
-    const dtoOut: GetTermsUsecaseRes = {
-      terms: terms.map((term) => ({
-        id: term.id!,
-        type: term.type,
-        title: term.title,
-        content: term.content,
-        is_required: term.isRequired,
-        writed_at: term.createdAt,
-      })),
-    }
+    return terms
+  }
 
-    // 3. 찾지 못한 약관 ID가 있으면 응답에 포함
-    const foundIds = terms.map((term) => term.id!)
-    const missingIds = dto.ids.filter((id) => !foundIds.includes(id))
-    if (missingIds.length > 0) {
-      dtoOut.missing_term_ids = missingIds
-    }
+  // 약관 정보를 응답 형식으로 변환
+  private formatTermsForRes(terms: Term[]) {
+    return terms.map((term) => ({
+      id: term.id!,
+      type: term.type,
+      title: term.title,
+      content: term.content,
+      is_required: term.isRequired,
+      writed_at: term.createdAt,
+    }))
+  }
 
-    return dtoOut
+  // 찾지 못한 약관 ID 목록 생성
+  private findMissingTermIds(requestedIds: number[], foundTerms: Term[]) {
+    const foundIds = foundTerms.map((term) => term.id!)
+    return requestedIds.filter((id) => !foundIds.includes(id))
   }
 }

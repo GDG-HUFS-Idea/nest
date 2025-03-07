@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { BadGatewayException, Inject, Injectable } from '@nestjs/common'
 import {
   CacheOauthUsecaseRes,
   CacheOauthUsecasePort,
@@ -11,17 +11,27 @@ export class CacheOauthUsecase implements CacheOauthUsecasePort {
   constructor(@Inject(CACHE_REPO) private readonly cacheRepo: CacheRepoPort) {}
 
   async exec(oauthUser: OauthUser): Promise<CacheOauthUsecaseRes> {
-    // 1. 고유 코드 생성
-    const code = generateNanoId()
+    const code = this.generateUniqueCode()
+    await this.cacheOauthUserInfo(code, oauthUser)
 
-    // 2. OAuth 사용자 정보를 코드와 함께 캐시에 저장 (60초 유효)
-    await this.cacheRepo.setOauthUser({
-      key: code,
-      oauthUser,
-      ttl: 60,
-    })
-
-    // 3. 생성된 코드 반환 (이후 OAuth 콜백에서 사용됨)
     return { code }
+  }
+
+  // 고유 코드 생성
+  private generateUniqueCode() {
+    return generateNanoId()
+  }
+
+  // OAuth 사용자 정보 캐싱
+  private async cacheOauthUserInfo(code: string, oauthUser: OauthUser) {
+    try {
+      await this.cacheRepo.setOauthUser({
+        key: code,
+        oauthUser,
+        ttl: 60, // 60초 유효
+      })
+    } catch {
+      throw new BadGatewayException()
+    }
   }
 }

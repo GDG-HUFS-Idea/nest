@@ -1,4 +1,5 @@
 import {
+  BadGatewayException,
   BadRequestException,
   Inject,
   Injectable,
@@ -23,12 +24,15 @@ import {
   UserAgreementRepoPort,
 } from 'src/port/out/repo/userAgreement.repo.port'
 import { ENUM } from 'src/shared/const/enum.const'
+import { Term } from 'src/domain/term'
+import { getSignUpTermTypes } from 'src/shared/helper/getSignUpTermTypes'
+import { Token } from 'src/shared/type/token.type'
 
 @Injectable()
 export class OauthSignUpUsecase implements OauthSignUpUsecasePort {
   constructor(
     @Inject(USER_AGREEMENT_REPO)
-    private readonly userAgreementRepo: UserAgreementRepoPort, //
+    private readonly userAgreementRepo: UserAgreementRepoPort,
     @Inject(CACHE_REPO) private readonly cacheRepo: CacheRepoPort,
     @Inject(USER_REPO) private readonly userRepo: UserRepoPort,
     @Inject(TERM_REPO) private readonly termRepo: TermRepoPort,
@@ -37,17 +41,57 @@ export class OauthSignUpUsecase implements OauthSignUpUsecasePort {
   ) {}
 
   async exec(dto: OauthSignUpUsecaseDto): Promise<OauthSignUpUsecaseRes> {
-    // 1. 가입 시 필요한 약관 정보 조회
-    const signUpTerms = await this.termRepo.findLatestByTypes({
-      types: [
-        ENUM.TERM_TYPE.MARKETING,
-        ENUM.TERM_TYPE.TERMS_OF_SERVICE,
-        ENUM.TERM_TYPE.PRIVACY_POLICY,
-      ],
-    })
-    if (!signUpTerms) throw new InternalServerErrorException()
+    const signUpTerms = await this.getSignUpTerms()
+    this.validateDtoTerms(dto, signUpTerms)
 
-    // 2. 사용자 약관 동의 정보 검증
+    const oauthUser = await this.retrieveOauthUserInfo(dto.session_id)
+    const savedUser = await this.createUserWithAgreements(oauthUser, dto)
+
+    const user = this.extractUserForToken(savedUser)
+    const token = this.generateToken(user)
+
+    return {
+      token,
+      user,
+    }
+  }
+
+  // 필수 약관 정보 조회
+  private async getSignUpTerms() {
+    const types = getSignUpTermTypes()
+    let signUpTerms: Term[] | null
+
+    try {
+      signUpTerms = await this.termRepo.findLatestByTypes({ types })
+    } catch {
+      throw new BadGatewayException()
+    }
+
+    if (!signUpTerms || signUpTerms.length === 0) {
+      throw new InternalServerErrorException()
+    }
+
+    return signUpTerms
+  }
+
+  // 세션 ID로 OAuth 사용자 정보 조회
+  private async retrieveOauthUserInfo(sessionId: string): Promise<OauthUser> {
+    let oauthUser: OauthUser | null
+    try {
+      oauthUser = await this.cacheRepo.getOauthUser({ key: sessionId })
+    } catch {
+      throw new BadGatewayException()
+    }
+
+    if (!oauthUser) {
+      throw new NotFoundException()
+    }
+
+    return oauthUser
+  }
+
+  // 약관 동의 정보 검증
+  private validateDtoTerms(dto: OauthSignUpUsecaseDto, signUpTerms: Term[]) {
     const agreementIds = dto.user_agreements.map((a) => a.term_id)
     const agreementIdsSet = new Set(agreementIds)
 
@@ -71,46 +115,74 @@ export class OauthSignUpUsecase implements OauthSignUpUsecasePort {
       if (requiredTerm.isRequired && !agreement.has_agreed)
         throw new BadRequestException({ code: 1 })
     }
+  }
 
-    // 3. 세션 ID로 OAuth 사용자 정보 조회
-    const oauthUser = await this.cacheRepo.getOauthUser({ key: dto.session_id })
-    if (!oauthUser) throw new NotFoundException()
-
+  // 유저 생성 및 약관 동의 정보 저장 (트랜잭션)
+  private async createUserWithAgreements(
+    oauthUser: OauthUser,
+    dto: OauthSignUpUsecaseDto,
+  ) {
     let savedUser: User
 
-    // 4. 트랜잭션으로 사용자 및 약관 동의 정보 저장
     await this.trxService.startTrx(async (trx) => {
-      const user = new User({
-        email: oauthUser.email,
-        name: oauthUser.name,
-        permissions: [ENUM.PERMISSION.GENERAL], // 기본 권한
-        plan: ENUM.SUBSCRIPTION_PLAN.FREE, // 무료 플랜
-      })
-      savedUser = await this.userRepo.saveOne({ user, ctx: trx })
+      const user = this.createUserEntity(oauthUser)
+      try {
+        savedUser = await this.userRepo.saveOne({ user, ctx: trx })
+      } catch {
+        throw new BadGatewayException()
+      }
 
-      const userAgreements = dto.user_agreements.map(
-        (userAgreement) =>
-          new UserAgreement({
-            userId: savedUser.id!,
-            termId: userAgreement.term_id,
-            hasAgreed: userAgreement.has_agreed,
-          }),
+      const userAgreements = this.createUserAgreementEntities(
+        savedUser.id!,
+        dto,
       )
-      await this.userAgreementRepo.saveMany({ userAgreements, ctx: trx })
+      try {
+        await this.userAgreementRepo.saveMany({ userAgreements, ctx: trx })
+      } catch {
+        throw new BadGatewayException()
+      }
 
       return
     })
 
-    // 5. JWT 토큰 생성 및 반환
-    const user = {
-      id: savedUser!.id!,
-      permissions: savedUser!.permissions,
-    }
-    const token = this.jwtService.generate(user)
+    return savedUser!
+  }
 
+  // 새 유저 엔티티 생성
+  private createUserEntity(oauthUser: OauthUser) {
+    return new User({
+      email: oauthUser.email,
+      name: oauthUser.name,
+      permissions: [ENUM.PERMISSION.GENERAL], // 기본 권한
+      plan: ENUM.SUBSCRIPTION_PLAN.FREE, // 무료 플랜
+    })
+  }
+
+  // 약관 동의 엔티티 생성
+  private createUserAgreementEntities(
+    userId: number,
+    dto: OauthSignUpUsecaseDto,
+  ) {
+    return dto.user_agreements.map(
+      (userAgreement) =>
+        new UserAgreement({
+          userId: userId,
+          termId: userAgreement.term_id,
+          hasAgreed: userAgreement.has_agreed,
+        }),
+    )
+  }
+
+  // 토큰 생성에 필요한 사용자 정보 추출
+  private extractUserForToken(user: User) {
     return {
-      token,
-      user,
+      id: user.id!,
+      permissions: user.permissions,
     }
+  }
+
+  // JWT 토큰 생성
+  private generateToken(payload: Token) {
+    return this.jwtService.generate(payload)
   }
 }

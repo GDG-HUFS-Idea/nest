@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer'
-import { ArrayNotEmpty, IsArray, IsNumber } from 'class-validator'
+import { ArrayNotEmpty, IsArray, IsNotEmpty, IsNumber } from 'class-validator'
 import { TermType } from 'src/shared/type/enum.type'
 
 export const GET_TERMS_USECASE = Symbol('GET_TERMS_USECASE')
@@ -10,13 +10,11 @@ export interface GetTermsUsecasePort {
 
 export class GetTermsUsecaseDto {
   @Transform(({ value }) => {
-    if (Array.isArray(value)) {
-      return value.map((item) => Number(item))
-    }
-    return value
+    if (Array.isArray(value)) return value.map((item) => Number(item))
+    else return [Number(value)]
   })
-  @IsArray()
   @ArrayNotEmpty()
+  @IsArray()
   @IsNumber({}, { each: true })
   ids!: number[]
 }
