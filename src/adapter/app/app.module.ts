@@ -19,6 +19,9 @@ import { OAUTH_SIGN_UP_USECASE } from 'src/port/in/auth/oauthSignUp.usecase.port
 import { OauthSignUpUsecase } from 'src/usecase/auth/oauthSignUp.usecase'
 import { GET_TERMS_USECASE } from 'src/port/in/term/getTerms.usecase.port'
 import { GetTermsUsecase } from 'src/usecase/term/getTerms.usecase'
+import { APP_FILTER } from '@nestjs/core'
+import { BadRequestFilter } from './filter/badRequest.filter'
+import { GlobalFilter } from './filter/global.filter'
 
 @Module({
   imports: [
@@ -39,6 +42,9 @@ import { GetTermsUsecase } from 'src/usecase/term/getTerms.usecase'
   controllers: [AuthController, TermController],
 
   providers: [
+    { provide: APP_FILTER, useClass: GlobalFilter }, // 두번째 필터링
+    { provide: APP_FILTER, useClass: BadRequestFilter }, // 첫번째 필터링
+
     GoogleOauthStrategy,
     GoogleOauthGuard,
 
