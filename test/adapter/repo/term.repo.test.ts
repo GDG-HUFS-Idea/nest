@@ -87,7 +87,12 @@ describe('TermRepo', () => {
       wrapper(async (trxCtx: RdbClient) => {
         const termsOfServiceType: TermType = 'terms_of_service'
         const privacyPolicyType: TermType = 'privacy_policy'
-        const types: TermType[] = [termsOfServiceType, privacyPolicyType]
+        const marketingType: TermType = 'marketing'
+        const types: TermType[] = [
+          termsOfServiceType,
+          privacyPolicyType,
+          marketingType,
+        ]
 
         const foundTerms = await termRepo.findLatestByTypes({
           types: types,
@@ -95,7 +100,7 @@ describe('TermRepo', () => {
         })
 
         expect(foundTerms).not.toBeNull()
-        expect(foundTerms!.length).toBe(2)
+        expect(foundTerms!.length).toBe(3)
 
         const termsOfServiceTerms = termSeeds.filter(
           (s) => s.type === termsOfServiceType,
@@ -111,18 +116,29 @@ describe('TermRepo', () => {
           (prev, current) => (prev.id! > current.id! ? prev : current),
         )
 
+        const marketingTerms = foundTerms!.filter(
+          (s) => s.type === marketingType,
+        )
+        const latestMarketing = marketingTerms!.reduce((prev, current) =>
+          prev.id! > current.id! ? prev : current,
+        )
+
         const foundTermsOfService = foundTerms!.find(
           (t) => t.type === termsOfServiceType,
         )
         const foundPrivacyPolicy = foundTerms!.find(
           (t) => t.type === privacyPolicyType,
         )
+        const foundMarketing = foundTerms!.find((t) => t.type === marketingType)
 
         expect(foundTermsOfService).toBeDefined()
         expect(foundTermsOfService!.id).toBe(latestTermsOfService.id)
 
         expect(foundPrivacyPolicy).toBeDefined()
         expect(foundPrivacyPolicy!.id).toBe(latestPrivacyPolicy.id)
+
+        expect(foundMarketing).toBeDefined()
+        expect(foundMarketing!.id).toBe(latestMarketing.id)
       }),
     )
 

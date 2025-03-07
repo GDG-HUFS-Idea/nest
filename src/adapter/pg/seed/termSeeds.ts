@@ -20,10 +20,10 @@ export const termSeeds: InferInsertModel<typeof schema.terms>[] = [
   },
   {
     id: 3,
-    type: 'terms_of_service',
+    type: 'marketing',
     title: '마케팅 정보 수신 동의',
     content:
       '동의하시면 새로운 기능, 이벤트 및 프로모션에 대한 정보를 이메일로 받아보실 수 있습니다. 언제든지 수신을 거부할 수 있습니다.',
-    isRequired: true,
+    isRequired: false,
   },
 ]
