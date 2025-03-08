@@ -1,6 +1,6 @@
-import * as schema from '../drizzle/schema';
-import { InferSelectModel } from 'drizzle-orm';
-import { Term } from 'src/domain/term';
+import * as schema from '../drizzle/schema'
+import { InferSelectModel } from 'drizzle-orm'
+import { Term } from 'src/domain/term'
 
 export const mapTerm = (term: InferSelectModel<typeof schema.terms>) => {
   return new Term({
@@ -12,5 +12,5 @@ export const mapTerm = (term: InferSelectModel<typeof schema.terms>) => {
     createdAt: term.createdAt,
     updatedAt: term.updatedAt,
     deletedAt: term.deletedAt || undefined,
-  });
-};
+  })
+}
