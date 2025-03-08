@@ -1,20 +1,25 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { NestFactory } from '@nestjs/core'
+import { AppModule } from './app.module'
+import { ValidationPipe } from '@nestjs/common'
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule)
 
-  // 모든 api들이 "/api"로 시작하도록 설정
-  app.setGlobalPrefix('api');
-
-  // cors 개방
   app.enableCors({
     origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: '*',
     credentials: true,
-  });
+  })
 
-  await app.listen(process.env.APP_PORT!);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  )
+
+  await app.listen(process.env.APP_PORT!)
 }
-bootstrap();
+bootstrap()
