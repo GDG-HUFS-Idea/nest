@@ -10,6 +10,7 @@ export class UserAgreement {
   updatedAt!: Date
   deletedAt?: Date
 
+  // relation
   user?: User
   term?: Term
 

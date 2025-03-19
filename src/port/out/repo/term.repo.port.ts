@@ -1,5 +1,5 @@
 import { Term } from 'src/domain/term'
-import { TermType } from 'src/shared/type/enum.type'
+import { TermType } from 'src/shared/enum/enum'
 import { RdbClient } from 'src/shared/type/rdbClient.type'
 
 export const TERM_REPO = Symbol('TERM_REPO')

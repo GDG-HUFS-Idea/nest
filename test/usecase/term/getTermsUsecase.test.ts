@@ -2,8 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { NotFoundException } from '@nestjs/common'
 import { TERM_REPO, TermRepoPort } from 'src/port/out/repo/term.repo.port'
 import { Term } from 'src/domain/term'
-import { GetTermsUsecaseDto } from 'src/port/in/term/getTerms.usecase.port'
 import { GetTermsUsecase } from 'src/usecase/term/getTerms.usecase'
+import { TermType } from 'src/shared/enum/enum'
+import { GetTermsUsecaseDto } from 'src/adapter/app/dto/term/getTerms.usecase.dto'
 
 describe('GetTermsUsecase', () => {
   let usecase: GetTermsUsecase
@@ -37,7 +38,7 @@ describe('GetTermsUsecase', () => {
     const mockTerms = [
       new Term({
         id: 1,
-        type: 'terms_of_service',
+        type: TermType.TERMS_OF_SERVICE,
         title: '서비스 이용약관',
         content: '약관 내용',
         isRequired: true,
@@ -45,7 +46,7 @@ describe('GetTermsUsecase', () => {
       }),
       new Term({
         id: 2,
-        type: 'privacy_policy',
+        type: TermType.PRIVACY_POLICY,
         title: '개인정보 처리방침',
         content: '방침 내용',
         isRequired: true,
@@ -77,7 +78,7 @@ describe('GetTermsUsecase', () => {
     const mockTerms = [
       new Term({
         id: 1,
-        type: 'terms_of_service',
+        type: TermType.TERMS_OF_SERVICE,
         title: '서비스 이용약관',
         content: '약관 내용',
         isRequired: true,
@@ -85,7 +86,7 @@ describe('GetTermsUsecase', () => {
       }),
       new Term({
         id: 2,
-        type: 'privacy_policy',
+        type: TermType.PRIVACY_POLICY,
         title: '개인정보 처리방침',
         content: '방침 내용',
         isRequired: true,

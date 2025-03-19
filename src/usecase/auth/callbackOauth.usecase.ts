@@ -6,10 +6,10 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { JwtService } from 'src/adapter/app/auth/jwt/jwt.service'
+import { CallbackOauthUsecaseDto } from 'src/adapter/app/dto/auth/callbackOauth.usecase.dto'
 import { Term } from 'src/domain/term'
 import { User } from 'src/domain/user'
 import {
-  CallbackOauthUsecaseDto,
   CallbackOauthUsecaseRes,
   CallbackOauthUsecasePort,
 } from 'src/port/in/auth/getOauthResult.usecase.port'

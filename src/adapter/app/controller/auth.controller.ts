@@ -17,14 +17,14 @@ import {
 import { OauthUser } from '../paramDecorator/oauthUser.decorator'
 import {
   CALLBACK_OAUTH_USECASE,
-  CallbackOauthUsecaseDto,
   CallbackOauthUsecasePort,
 } from 'src/port/in/auth/getOauthResult.usecase.port'
 import {
   OAUTH_SIGN_UP_USECASE,
-  OauthSignUpUsecaseDto,
   OauthSignUpUsecasePort,
 } from 'src/port/in/auth/oauthSignUp.usecase.port'
+import { CallbackOauthUsecaseDto } from '../dto/auth/callbackOauth.usecase.dto'
+import { OauthSignUpUsecaseDto } from '../dto/auth/oauthSignUp.usecase.dto'
 
 @Controller('/auth')
 export class AuthController {

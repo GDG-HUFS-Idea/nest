@@ -4,7 +4,7 @@ import { PgService } from 'src/adapter/pg/pg.service'
 import { termSeeds } from 'src/adapter/pg/seed/termSeeds'
 import { ConfigModule } from '@nestjs/config'
 import { RdbClient } from 'src/shared/type/rdbClient.type'
-import { TermType } from 'src/shared/type/enum.type'
+import { TermType } from 'src/shared/enum/enum'
 
 describe('TermRepo', () => {
   let termRepo: TermRepo
@@ -85,9 +85,9 @@ describe('TermRepo', () => {
     it(
       '타입별 최신 약관 조회',
       wrapper(async (trxCtx: RdbClient) => {
-        const termsOfServiceType: TermType = 'terms_of_service'
-        const privacyPolicyType: TermType = 'privacy_policy'
-        const marketingType: TermType = 'marketing'
+        const termsOfServiceType = TermType.TERMS_OF_SERVICE
+        const privacyPolicyType = TermType.PRIVACY_POLICY
+        const marketingType = TermType.MARKETING
         const types: TermType[] = [
           termsOfServiceType,
           privacyPolicyType,

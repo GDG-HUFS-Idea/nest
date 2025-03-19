@@ -8,7 +8,8 @@ import { NotFoundException, InternalServerErrorException } from '@nestjs/common'
 import { User } from 'src/domain/user'
 import { Term } from 'src/domain/term'
 import * as nanoidModule from 'src/shared/helper/generateNanoId'
-import { ENUM } from 'src/shared/const/enum.const'
+import { TermType, UserPermission, UserPlan } from 'src/shared/enum/enum'
+import { CallbackOauthUsecaseDto } from 'src/adapter/app/dto/auth/callbackOauth.usecase.dto'
 
 describe('CallbackOauthUsecase', () => {
   let usecase: CallbackOauthUsecase
@@ -84,8 +85,8 @@ describe('CallbackOauthUsecase', () => {
       id: 1,
       email: 'existing@example.com',
       name: '기존 사용자',
-      permissions: ['general'],
-      plan: 'free',
+      permissions: [UserPermission.GENERAL],
+      plan: UserPlan.FREE,
     })
 
     const mockToken = 'mock-jwt-token'
@@ -94,7 +95,9 @@ describe('CallbackOauthUsecase', () => {
     jest.spyOn(userRepo, 'findOneByEmail').mockResolvedValue(mockExistingUser)
     jest.spyOn(jwtService, 'generate').mockReturnValue(mockToken)
 
-    const result = await usecase.exec({ code: authCode })
+    const dto: CallbackOauthUsecaseDto = { code: authCode }
+
+    const result = await usecase.exec(dto)
 
     expect(cacheRepo.getOauthUser).toHaveBeenCalledWith({ key: authCode })
     expect(userRepo.findOneByEmail).toHaveBeenCalledWith({
@@ -130,21 +133,21 @@ describe('CallbackOauthUsecase', () => {
     const mockTerms = [
       new Term({
         id: 1,
-        type: ENUM.TERM_TYPE.TERMS_OF_SERVICE,
+        type: TermType.TERMS_OF_SERVICE,
         title: '서비스 이용약관',
         content: '약관 내용',
         isRequired: true,
       }),
       new Term({
         id: 2,
-        type: ENUM.TERM_TYPE.PRIVACY_POLICY,
+        type: TermType.PRIVACY_POLICY,
         title: '개인정보 처리방침',
         content: '방침 내용',
         isRequired: true,
       }),
       new Term({
         id: 3,
-        type: ENUM.TERM_TYPE.MARKETING,
+        type: TermType.MARKETING,
         title: '마케팅 정보 수신 동의',
         content: '마케팅 내용',
         isRequired: false,
@@ -156,7 +159,9 @@ describe('CallbackOauthUsecase', () => {
     jest.spyOn(nanoidModule, 'generateNanoId').mockReturnValue(sessionId)
     jest.spyOn(termRepo, 'findLatestByTypes').mockResolvedValue(mockTerms)
 
-    const result = await usecase.exec({ code: authCode })
+    const dto: CallbackOauthUsecaseDto = { code: authCode }
+
+    const result = await usecase.exec(dto)
 
     expect(cacheRepo.getOauthUser).toHaveBeenCalledWith({ key: authCode })
     expect(userRepo.findOneByEmail).toHaveBeenCalledWith({
@@ -164,9 +169,9 @@ describe('CallbackOauthUsecase', () => {
     })
     expect(termRepo.findLatestByTypes).toHaveBeenCalledWith({
       types: [
-        ENUM.TERM_TYPE.MARKETING,
-        ENUM.TERM_TYPE.TERMS_OF_SERVICE,
-        ENUM.TERM_TYPE.PRIVACY_POLICY,
+        TermType.MARKETING,
+        TermType.TERMS_OF_SERVICE,
+        TermType.PRIVACY_POLICY,
       ],
     })
     expect(cacheRepo.setOauthUser).toHaveBeenCalledWith({
@@ -188,9 +193,9 @@ describe('CallbackOauthUsecase', () => {
 
     jest.spyOn(cacheRepo, 'getOauthUser').mockResolvedValue(null)
 
-    await expect(usecase.exec({ code: authCode })).rejects.toThrow(
-      NotFoundException,
-    )
+    const dto: CallbackOauthUsecaseDto = { code: authCode }
+
+    await expect(usecase.exec(dto)).rejects.toThrow(NotFoundException)
     expect(cacheRepo.getOauthUser).toHaveBeenCalledWith({ key: authCode })
   })
 
@@ -210,7 +215,9 @@ describe('CallbackOauthUsecase', () => {
     jest.spyOn(nanoidModule, 'generateNanoId').mockReturnValue(sessionId)
     jest.spyOn(termRepo, 'findLatestByTypes').mockResolvedValue(null)
 
-    await expect(usecase.exec({ code: authCode })).rejects.toThrow(
+    const dto: CallbackOauthUsecaseDto = { code: authCode }
+
+    await expect(usecase.exec(dto)).rejects.toThrow(
       InternalServerErrorException,
     )
   })
