@@ -1,15 +1,10 @@
-import { IsString } from 'class-validator'
-import { Permission } from 'src/shared/type/enum.type'
+import { CallbackOauthUsecaseDto } from 'src/adapter/app/dto/auth/callbackOauth.usecase.dto'
+import { UserPermission } from 'src/shared/enum/enum'
 
 export const CALLBACK_OAUTH_USECASE = Symbol('CALLBACK_OAUTH_USECASE')
 
 export interface CallbackOauthUsecasePort {
   exec(dto: CallbackOauthUsecaseDto): Promise<CallbackOauthUsecaseRes>
-}
-
-export class CallbackOauthUsecaseDto {
-  @IsString()
-  code!: string
 }
 
 export type CallbackOauthUsecaseRes =
@@ -18,7 +13,7 @@ export type CallbackOauthUsecaseRes =
       token: string
       user: {
         id: number
-        permissions: Permission[]
+        permissions: UserPermission[]
       }
     }
   | {

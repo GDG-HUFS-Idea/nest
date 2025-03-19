@@ -1,22 +1,10 @@
-import { Transform } from 'class-transformer'
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsNumber } from 'class-validator'
-import { TermType } from 'src/shared/type/enum.type'
+import { GetTermsUsecaseDto } from 'src/adapter/app/dto/term/getTerms.usecase.dto'
+import { TermType } from 'src/shared/enum/enum'
 
 export const GET_TERMS_USECASE = Symbol('GET_TERMS_USECASE')
 
 export interface GetTermsUsecasePort {
   exec(dto: GetTermsUsecaseDto): Promise<GetTermsUsecaseRes>
-}
-
-export class GetTermsUsecaseDto {
-  @Transform(({ value }) => {
-    if (Array.isArray(value)) return value.map((item) => Number(item))
-    else return [Number(value)]
-  })
-  @ArrayNotEmpty()
-  @IsArray()
-  @IsNumber({}, { each: true })
-  ids!: number[]
 }
 
 export type GetTermsUsecaseRes = {

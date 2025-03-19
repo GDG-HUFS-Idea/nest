@@ -1,9 +1,9 @@
-import { ENUM } from '../const/enum.const'
+import { TermType } from '../enum/enum'
 
 export const getSignUpTermTypes = () => {
   return [
-    ENUM.TERM_TYPE.MARKETING,
-    ENUM.TERM_TYPE.TERMS_OF_SERVICE,
-    ENUM.TERM_TYPE.PRIVACY_POLICY,
+    TermType.MARKETING,
+    TermType.TERMS_OF_SERVICE,
+    TermType.PRIVACY_POLICY,
   ]
 }

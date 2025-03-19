@@ -1,10 +1,10 @@
-import { SubscriptionPlan, SubscriptionStatus } from 'src/shared/type/enum.type'
+import { SubscriptionStatus, UserPlan } from 'src/shared/enum/enum'
 import { User } from './user'
 
 export class Subscription {
   id?: number
   userId!: number
-  plan!: SubscriptionPlan
+  plan!: UserPlan
   status!: SubscriptionStatus
   startedAt!: Date
   endedAt!: Date
@@ -13,12 +13,13 @@ export class Subscription {
   updatedAt!: Date
   deletedAt?: Date
 
+  // relation
   user?: User
 
   constructor(params: {
     id?: number
     userId: number
-    plan: SubscriptionPlan
+    plan: UserPlan
     status: SubscriptionStatus
     startedAt: Date
     endedAt: Date

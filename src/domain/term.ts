@@ -1,5 +1,5 @@
+import { TermType } from 'src/shared/enum/enum'
 import { UserAgreement } from './userAgreement'
-import { TermType } from 'src/shared/type/enum.type'
 
 export class Term {
   id?: number
@@ -11,6 +11,7 @@ export class Term {
   updatedAt!: Date
   deletedAt?: Date
 
+  // relation
   userAgreements?: UserAgreement[]
 
   constructor(params: {

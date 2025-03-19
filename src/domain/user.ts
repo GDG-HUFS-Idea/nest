@@ -1,4 +1,4 @@
-import { Permission, SubscriptionPlan } from 'src/shared/type/enum.type'
+import { UserPermission, UserPlan } from 'src/shared/enum/enum'
 import { Subscription } from './subscription'
 import { UserAgreement } from './userAgreement'
 
@@ -6,20 +6,21 @@ export class User {
   id?: number
   email!: string
   name!: string
-  plan!: SubscriptionPlan
-  permissions!: Permission[]
+  plan!: UserPlan
+  permissions!: UserPermission[]
   createdAt!: Date
   updatedAt!: Date
   deletedAt?: Date
 
+  // relation
   subscriptions?: Subscription[]
   userAgreements?: UserAgreement[]
 
   constructor(params: {
     email: string
     name: string
-    plan: SubscriptionPlan
-    permissions: Permission[]
+    plan: UserPlan
+    permissions: UserPermission[]
     id?: number
     createdAt?: Date
     updatedAt?: Date

@@ -11,7 +11,6 @@ import { TrxService } from 'src/adapter/pg/trx.service'
 import { User } from 'src/domain/user'
 import { UserAgreement } from 'src/domain/userAgreement'
 import {
-  OauthSignUpUsecaseDto,
   OauthSignUpUsecaseRes,
   OauthSignUpUsecasePort,
 } from 'src/port/in/auth/oauthSignUp.usecase.port'
@@ -23,10 +22,11 @@ import {
   USER_AGREEMENT_REPO,
   UserAgreementRepoPort,
 } from 'src/port/out/repo/userAgreement.repo.port'
-import { ENUM } from 'src/shared/const/enum.const'
 import { Term } from 'src/domain/term'
 import { getSignUpTermTypes } from 'src/shared/helper/getSignUpTermTypes'
 import { Token } from 'src/shared/type/token.type'
+import { OauthSignUpUsecaseDto } from 'src/adapter/app/dto/auth/oauthSignUp.usecase.dto'
+import { UserPermission, UserPlan } from 'src/shared/enum/enum'
 
 @Injectable()
 export class OauthSignUpUsecase implements OauthSignUpUsecasePort {
@@ -153,8 +153,8 @@ export class OauthSignUpUsecase implements OauthSignUpUsecasePort {
     return new User({
       email: oauthUser.email,
       name: oauthUser.name,
-      permissions: [ENUM.PERMISSION.GENERAL], // 기본 권한
-      plan: ENUM.SUBSCRIPTION_PLAN.FREE, // 무료 플랜
+      permissions: [UserPermission.GENERAL], // 기본 권한
+      plan: UserPlan.FREE, // 무료 플랜
     })
   }
 

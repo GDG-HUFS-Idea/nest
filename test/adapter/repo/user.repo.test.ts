@@ -5,6 +5,7 @@ import { PgService } from 'src/adapter/pg/pg.service'
 import { userSeeds } from 'src/adapter/pg/seed/userSeeds'
 import { ConfigModule } from '@nestjs/config'
 import { RdbClient } from 'src/shared/type/rdbClient.type'
+import { UserPermission, UserPlan } from 'src/shared/enum/enum'
 
 describe('UserRepo', () => {
   let userRepo: UserRepo
@@ -77,8 +78,8 @@ describe('UserRepo', () => {
       wrapper(async (trxCtx: RdbClient) => {
         const newUser = new User({
           name: '테스트 사용자',
-          plan: 'free',
-          permissions: ['general'],
+          plan: UserPlan.FREE,
+          permissions: [UserPermission.GENERAL],
           email: 'test@example.com',
         })
 

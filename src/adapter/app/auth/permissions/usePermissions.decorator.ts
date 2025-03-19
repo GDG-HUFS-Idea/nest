@@ -1,4 +1,4 @@
 import { Reflector } from '@nestjs/core'
-import { Permission } from 'src/shared/type/enum.type'
+import { UserPermission } from 'src/shared/enum/enum'
 
-export const UsePermissions = Reflector.createDecorator<Permission[]>()
+export const UsePermissions = Reflector.createDecorator<UserPermission[]>()

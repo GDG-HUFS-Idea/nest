@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { Term } from 'src/domain/term'
 import { TermRepoPort } from 'src/port/out/repo/term.repo.port'
-import { TermType } from 'src/shared/type/enum.type'
 import * as schema from '../drizzle/schema'
 import { PgService } from '../pg.service'
 import { and, inArray, isNull, max } from 'drizzle-orm'
 import { mapTerm } from '../mapper/mapTerm'
 import { RdbClient } from 'src/shared/type/rdbClient.type'
+import { TermType } from 'src/shared/enum/enum'
 
 @Injectable()
 export class TermRepo implements TermRepoPort {

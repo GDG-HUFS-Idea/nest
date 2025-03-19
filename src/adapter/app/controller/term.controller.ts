@@ -1,9 +1,9 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common'
 import {
   GET_TERMS_USECASE,
-  GetTermsUsecaseDto,
   GetTermsUsecasePort,
 } from 'src/port/in/term/getTerms.usecase.port'
+import { GetTermsUsecaseDto } from '../dto/term/getTerms.usecase.dto'
 
 @Controller('/terms')
 export class TermController {

@@ -4,9 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
+import { GetTermsUsecaseDto } from 'src/adapter/app/dto/term/getTerms.usecase.dto'
 import { Term } from 'src/domain/term'
 import {
-  GetTermsUsecaseDto,
   GetTermsUsecaseRes,
   GetTermsUsecasePort,
 } from 'src/port/in/term/getTerms.usecase.port'

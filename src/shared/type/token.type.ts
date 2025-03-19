@@ -1,6 +1,6 @@
-import { Permission } from './enum.type'
+import { UserPermission } from '../enum/enum'
 
 export type Token = {
   id: number
-  permissions: Permission[]
+  permissions: UserPermission[]
 }

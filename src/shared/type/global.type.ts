@@ -1,9 +1,9 @@
-import { Permission } from './enum.type'
+import { UserPermission } from '../enum/enum'
 
 declare global {
   interface User {
     id: number
-    permissions: Permission[]
+    permissions: UserPermission[]
   }
 
   interface OauthUser {
