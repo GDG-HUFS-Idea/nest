@@ -22,6 +22,11 @@ import { GetTermsUsecase } from 'src/usecase/term/getTerms.usecase'
 import { APP_FILTER } from '@nestjs/core'
 import { BadRequestFilter } from './filter/badRequest.filter'
 import { GlobalFilter } from './filter/global.filter'
+import { GetAnalysisOverviewUsecase } from 'src/usecase/project/getAnalysisOverviewUsecase'
+import { GetMyProjectListUsecase } from 'src/usecase/project/getMyProjectListUsecase'
+import { GET_ANALYSIS_OVERVIEW_USECASE } from 'src/port/in/project/getAnalysisOverviewUsecase.port'
+import { GET_MY_PROJECT_LIST_USECASE } from 'src/port/in/project/getMyProjectListUsecase.port'
+import { ProjectController } from './controller/project.controller'
 
 @Module({
   imports: [
@@ -39,7 +44,7 @@ import { GlobalFilter } from './filter/global.filter'
     RedisModule,
   ],
 
-  controllers: [AuthController, TermController],
+  controllers: [AuthController, TermController, ProjectController],
 
   providers: [
     { provide: APP_FILTER, useClass: GlobalFilter }, // 두번째 필터링
@@ -58,6 +63,11 @@ import { GlobalFilter } from './filter/global.filter'
     { provide: CALLBACK_OAUTH_USECASE, useClass: CallbackOauthUsecase },
     { provide: OAUTH_SIGN_UP_USECASE, useClass: OauthSignUpUsecase },
     { provide: GET_TERMS_USECASE, useClass: GetTermsUsecase },
+    {
+      provide: GET_ANALYSIS_OVERVIEW_USECASE,
+      useClass: GetAnalysisOverviewUsecase,
+    },
+    { provide: GET_MY_PROJECT_LIST_USECASE, useClass: GetMyProjectListUsecase },
   ],
 })
 export class AppModule {}

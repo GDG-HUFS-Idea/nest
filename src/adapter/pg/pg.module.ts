@@ -10,7 +10,10 @@ import { TERM_REPO } from 'src/port/out/repo/term.repo.port'
 import { TRX_SERVICE } from 'src/port/out/service/trx.service.port'
 import { TrxService } from './trx.service'
 import { SeedService } from './seed.service'
-
+import { MARKET_STATS_REPO } from 'src/port/out/repo/marketStats.repo.port'
+import { MarketStatsRepo } from './repo/marketStats.repo'
+import { PROJECT_REPO } from 'src/port/out/repo/project.repo.port'
+import { ProjectRepo } from './repo/project.repo'
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true })],
 
@@ -22,8 +25,17 @@ import { SeedService } from './seed.service'
     { provide: USER_REPO, useClass: UserRepo },
     { provide: TERM_REPO, useClass: TermRepo },
     { provide: USER_AGREEMENT_REPO, useClass: UserAgreementRepo },
+    { provide: MARKET_STATS_REPO, useClass: MarketStatsRepo },
+    { provide: PROJECT_REPO, useClass: ProjectRepo },
   ],
 
-  exports: [TRX_SERVICE, USER_REPO, TERM_REPO, USER_AGREEMENT_REPO],
+  exports: [
+    TRX_SERVICE,
+    USER_REPO,
+    TERM_REPO,
+    USER_AGREEMENT_REPO,
+    MARKET_STATS_REPO,
+    PROJECT_REPO,
+  ],
 })
 export class PgModule {}

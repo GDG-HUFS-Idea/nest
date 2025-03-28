@@ -1,29 +1,27 @@
-import { Currency, Region } from 'src/shared/enum/enum'
+import { Currency } from 'src/shared/enum/enum'
 
 export type MarketTrend = {
-  [key in Region]: {
-    year: number
-    volume: number
-    currency: Currency
-    growthRate: number
-    source: string
-  }[]
+  year: number
+  volume: number
+  currency: Currency
+  growthRate: number
+  source: string
 }
 
 export type AvgRevenue = {
-  [key in Region]: {
-    amount: number
-    currency: Currency
-    source: string
-  }[]
+  amount: number
+  currency: Currency
+  source: string
 }
 
 export class MarketStats {
   id?: number
   industryPath!: string
   score!: number
-  marketTrend!: MarketTrend
-  avgRevenue!: AvgRevenue
+  domesticMarketTrends!: MarketTrend[]
+  globalMarketTrends!: MarketTrend[]
+  domesticAvgRevenue!: AvgRevenue
+  globalAvgRevenue!: AvgRevenue
   createdAt!: Date
   updatedAt!: Date
   deletedAt?: Date
@@ -32,8 +30,10 @@ export class MarketStats {
     id?: number
     industryPath: string
     score: number
-    marketTrend: MarketTrend
-    avgRevenue: AvgRevenue
+    domesticMarketTrends: MarketTrend[]
+    globalMarketTrends: MarketTrend[]
+    domesticAvgRevenue: AvgRevenue
+    globalAvgRevenue: AvgRevenue
     createdAt?: Date
     updatedAt?: Date
     deletedAt?: Date
@@ -41,8 +41,10 @@ export class MarketStats {
     this.id = param.id
     this.industryPath = param.industryPath
     this.score = param.score
-    this.marketTrend = param.marketTrend
-    this.avgRevenue = param.avgRevenue
+    this.domesticMarketTrends = param.domesticMarketTrends
+    this.globalMarketTrends = param.globalMarketTrends
+    this.domesticAvgRevenue = param.domesticAvgRevenue
+    this.globalAvgRevenue = param.globalAvgRevenue
     this.createdAt = param.createdAt ?? new Date()
     this.updatedAt = param.updatedAt ?? new Date()
     this.deletedAt = param.deletedAt
