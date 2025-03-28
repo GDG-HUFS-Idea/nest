@@ -1,38 +1,41 @@
-import { User } from './user'
-import { Term } from './term'
+import { AnalysisOverview } from './analysisOverview'
+import { Idea } from './idea'
 
-export class UserAgreement {
+export class Project {
   id?: number
   userId!: number
-  termId!: number
-  hasAgreed!: boolean
+  name!: string
+  industryPath!: string
   createdAt!: Date
   updatedAt!: Date
   deletedAt?: Date
 
   // relation
   user?: User
-  term?: Term
+  ideas?: Idea[]
+  analysisOverview?: AnalysisOverview
 
   constructor(param: {
     userId: number
-    termId: number
-    hasAgreed: boolean
+    name: string
+    industryPath: string
     id?: number
     createdAt?: Date
     updatedAt?: Date
     deletedAt?: Date
     user?: User
-    term?: Term
+    ideas?: Idea[]
+    analysisOverview?: AnalysisOverview
   }) {
     this.userId = param.userId
-    this.termId = param.termId
-    this.hasAgreed = param.hasAgreed
+    this.name = param.name
+    this.industryPath = param.industryPath
     this.id = param.id
     this.createdAt = param.createdAt ?? new Date()
     this.updatedAt = param.updatedAt ?? new Date()
     this.deletedAt = param.deletedAt
     this.user = param.user
-    this.term = param.term
+    this.ideas = param.ideas
+    this.analysisOverview = param.analysisOverview
   }
 }

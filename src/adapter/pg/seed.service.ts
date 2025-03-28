@@ -2,10 +2,17 @@ import { Injectable, OnModuleInit } from '@nestjs/common'
 import { PgService } from './pg.service'
 import * as schema from './drizzle/schema'
 import { userSeeds } from './seed/userSeeds'
-import { userAgreementSeeds } from './seed/userAgreementSeeds'
+import { subscriptionSeeds } from './seed/subscriptionSeeds'
 import { termSeeds } from './seed/termSeeds'
+import { userAgreementSeeds } from './seed/userAgreementSeeds'
+import { projectSeeds } from './seed/projectSeeds'
+import { ideaSeeds } from './seed/ideaSeeds'
+import { marketStatsSeeds } from './seed/marketStatsSeeds'
 import { sql } from 'drizzle-orm'
 import { RdbClient } from 'src/shared/type/rdbClient.type'
+import { analysisOverviewSeeds } from './seed/analysisSeeds'
+import { marketTrendSeeds } from './seed/marketTrendSeeds'
+import { avgRevenueSeeds } from './seed/avgRevenueSeeds'
 
 @Injectable()
 export class SeedService implements OnModuleInit {
@@ -23,6 +30,16 @@ export class SeedService implements OnModuleInit {
     await ctx.insert(schema.users).values(userSeeds)
     await ctx.insert(schema.terms).values(termSeeds)
     await ctx.insert(schema.userAgreements).values(userAgreementSeeds)
+    await ctx.insert(schema.subscriptions).values(subscriptionSeeds)
+
+    await ctx.insert(schema.projects).values(projectSeeds)
+    await ctx.insert(schema.ideas).values(ideaSeeds)
+
+    await ctx.insert(schema.analysisOverview).values(analysisOverviewSeeds)
+
+    await ctx.insert(schema.marketStats).values(marketStatsSeeds)
+    await ctx.insert(schema.marketTrends).values(marketTrendSeeds)
+    await ctx.insert(schema.avgRevenues).values(avgRevenueSeeds)
   }
 
   private async truncateAllTables(ctx: RdbClient) {
