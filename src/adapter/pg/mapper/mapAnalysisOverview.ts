@@ -35,16 +35,18 @@ export const mapAnalysisOverview = (
       }),
     ),
 
-    targetMarkets: (analysisOverview.targetMarkets || []).map((market) => ({
-      target: market.target,
-      iconUrl: market.icon_url,
-      order: market.order,
-      reasons: market.reasons,
-      appeal: market.appeal,
-      onlineActivity: market.online_activity,
-      onlineChannels: market.online_channels,
-      offlineChannels: market.offline_channels,
-    })),
+    targetMarkets: (analysisOverview.targetMarkets || [])
+      .map((market) => ({
+        target: market.target,
+        iconUrl: market.icon_url,
+        order: market.order,
+        reasons: market.reasons,
+        appeal: market.appeal,
+        onlineActivity: market.online_activity,
+        onlineChannels: market.online_channels,
+        offlineChannels: market.offline_channels,
+      }))
+      .sort((a, b) => a.order - b.order),
 
     marketingStrategies: analysisOverview.marketingStrategies || [],
 
@@ -59,19 +61,21 @@ export const mapAnalysisOverview = (
         description: item.description,
         details: item.details,
       })),
-      investments: analysisOverview.businessModel.investments.map((item) => ({
-        order: item.order,
-        section: item.section,
-        details: item.details,
-      })),
+      investments: analysisOverview.businessModel.investments
+        .map((item) => ({
+          order: item.order,
+          section: item.section,
+          details: item.details,
+        }))
+        .sort((a, b) => a.order - b.order),
     },
 
     opportunities: analysisOverview.opportunities || [],
 
     limitations: analysisOverview.limitations || [],
 
-    teamRequirements: (analysisOverview.teamRequirements || []).map(
-      (requirement) => ({
+    teamRequirements: (analysisOverview.teamRequirements || [])
+      .map((requirement) => ({
         order: requirement.order,
         role: requirement.role,
         skills: requirement.skills,
@@ -79,8 +83,8 @@ export const mapAnalysisOverview = (
         salaryMin: requirement.salary_min,
         salaryMax: requirement.salary_max,
         currency: requirement.currency,
-      }),
-    ),
+      }))
+      .sort((a, b) => a.order - b.order),
 
     createdAt: analysisOverview.createdAt,
     updatedAt: analysisOverview.updatedAt,

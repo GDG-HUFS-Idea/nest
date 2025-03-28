@@ -8,40 +8,62 @@ export const mapMarketStats = (
   marketTrends: InferSelectModel<typeof schema.marketTrends>[],
   avgRevenues: InferSelectModel<typeof schema.avgRevenues>[],
 ) => {
-  const marketTrendsByRegion: MarketTrend = {
-    [Region.DOMESTIC]: [],
-    [Region.GLOBAL]: [],
-  }
+  const domesticMarketTrends: MarketTrend[] = []
+  const globalMarketTrends: MarketTrend[] = []
 
   for (const marketTrend of marketTrends) {
-    marketTrendsByRegion[marketTrend.region].push({
+    const trendData: MarketTrend = {
       year: marketTrend.year,
       volume: marketTrend.volume,
-      currency: marketTrend.currency,
+      currency: marketTrend.currency as Currency,
       growthRate: marketTrend.growthRate,
       source: marketTrend.source,
-    })
+    }
+
+    if (marketTrend.region === Region.DOMESTIC) {
+      domesticMarketTrends.push(trendData)
+    } else if (marketTrend.region === Region.GLOBAL) {
+      globalMarketTrends.push(trendData)
+    }
   }
 
-  const avgRevenuesByRegion: AvgRevenue = {
-    [Region.DOMESTIC]: [],
-    [Region.GLOBAL]: [],
+  domesticMarketTrends.sort((a, b) => a.year - b.year)
+  globalMarketTrends.sort((a, b) => a.year - b.year)
+
+  let domesticAvgRevenue: AvgRevenue = {
+    amount: 0,
+    currency: Currency.KRW,
+    source: '',
+  }
+
+  let globalAvgRevenue: AvgRevenue = {
+    amount: 0,
+    currency: Currency.USD,
+    source: '',
   }
 
   for (const avgRevenue of avgRevenues) {
-    avgRevenuesByRegion[avgRevenue.region].push({
+    const revenueData: AvgRevenue = {
       amount: avgRevenue.amount,
-      currency: avgRevenue.currency,
+      currency: avgRevenue.currency as Currency,
       source: avgRevenue.source,
-    })
+    }
+
+    if (avgRevenue.region === Region.DOMESTIC) {
+      domesticAvgRevenue = revenueData
+    } else if (avgRevenue.region === Region.GLOBAL) {
+      globalAvgRevenue = revenueData
+    }
   }
 
   return new MarketStats({
     id: marketStats.id,
     industryPath: marketStats.industryPath,
     score: marketStats.score,
-    marketTrend: marketTrendsByRegion,
-    avgRevenue: avgRevenuesByRegion,
+    domesticMarketTrends: domesticMarketTrends,
+    globalMarketTrends: globalMarketTrends,
+    domesticAvgRevenue: domesticAvgRevenue,
+    globalAvgRevenue: globalAvgRevenue,
     createdAt: marketStats.createdAt,
     updatedAt: marketStats.updatedAt,
     deletedAt: marketStats.deletedAt || undefined,
