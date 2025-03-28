@@ -10,7 +10,7 @@ import {
 import { GetAnalysisOverviewUsecaseDto } from '../dto/project/getAnalysisOverviewUsecaseDto'
 import { User } from '../paramDecorator/user.decorator'
 import { JwtGuard } from '../auth/jwt/jwt.guard'
-
+import { GetMyProjectListUsecaseDto } from '../dto/project/getMyProjectListUsecaseDto'
 @Controller('/projects')
 export class ProjectController {
   constructor(
@@ -31,7 +31,10 @@ export class ProjectController {
 
   @Get('/my')
   @UseGuards(JwtGuard)
-  async getMyProjectList(@User() user: User) {
-    return this.getMyProjectListUsecase.exec(user)
+  async getMyProjectList(
+    @Query() dto: GetMyProjectListUsecaseDto,
+    @User() user: User,
+  ) {
+    return this.getMyProjectListUsecase.exec(dto, user)
   }
 }

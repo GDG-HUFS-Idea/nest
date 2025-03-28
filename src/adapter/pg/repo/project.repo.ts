@@ -58,4 +58,26 @@ export class ProjectRepo implements ProjectRepoPort {
     project.analysisOverview = analysisOverview
     return project
   }
+
+  async findManyByUserId(param: {
+    userId: number
+    offset: number
+    limit: number
+    ctx?: RdbClient
+  }): Promise<Project[] | null> {
+    const ctx = param.ctx ?? this.pgService.getClient()
+
+    const projects = await ctx.query.projects.findMany({
+      where: and(
+        eq(schema.projects.userId, param.userId),
+        isNull(schema.projects.deletedAt),
+      ),
+      offset: param.offset,
+      limit: param.limit,
+    })
+
+    if (!projects) return null
+
+    return projects.map(mapProject)
+  }
 }

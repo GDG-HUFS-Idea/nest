@@ -85,7 +85,7 @@ export class GetAnalysisOverviewUsecase
     return marketStats
   }
 
-  // res 빌드
+  // 응답 데이터 빌드
   private buildRes(
     project: Project,
     marketStats: MarketStats,
