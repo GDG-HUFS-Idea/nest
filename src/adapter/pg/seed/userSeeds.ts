@@ -1,27 +1,27 @@
-import { InferInsertModel } from 'drizzle-orm'
 import * as schema from '../drizzle/schema'
+import { InferInsertModel } from 'drizzle-orm'
 import { UserPermission, UserPlan } from 'src/shared/enum/enum'
 
 export const userSeeds: InferInsertModel<typeof schema.users>[] = [
   {
     id: 1,
-    name: '관리자_1',
-    plan: UserPlan.FREE,
+    email: 'admin@example.com',
+    name: '관리자',
+    plan: UserPlan.PRO,
     permissions: [UserPermission.ADMIN],
-    email: 'admin1@example.com',
   },
   {
     id: 2,
-    name: '사용자_1',
-    plan: UserPlan.FREE,
+    email: 'pro.user@example.com',
+    name: '프로사용자',
+    plan: UserPlan.PRO,
     permissions: [UserPermission.GENERAL],
-    email: 'user1@example.com',
   },
   {
     id: 3,
-    name: '사용자_2',
+    email: 'free.user@example.com',
+    name: '무료사용자',
     plan: UserPlan.FREE,
     permissions: [UserPermission.GENERAL],
-    email: 'user2@example.com',
   },
 ]

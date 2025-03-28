@@ -4,8 +4,8 @@ import { UserAgreement } from 'src/domain/userAgreement'
 
 export const mapUserAgreement = (
   userAgreement: InferSelectModel<typeof schema.userAgreements>,
-) => {
-  return new UserAgreement({
+) =>
+  new UserAgreement({
     id: userAgreement.id,
     userId: userAgreement.userId,
     termId: userAgreement.termId,
@@ -14,4 +14,3 @@ export const mapUserAgreement = (
     updatedAt: userAgreement.updatedAt,
     deletedAt: userAgreement.deletedAt || undefined,
   })
-}

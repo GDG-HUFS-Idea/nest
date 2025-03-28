@@ -14,7 +14,7 @@ export class Term {
   // relation
   userAgreements?: UserAgreement[]
 
-  constructor(params: {
+  constructor(param: {
     id?: number
     type: TermType
     isRequired: boolean
@@ -25,14 +25,14 @@ export class Term {
     deletedAt?: Date
     userAgreements?: UserAgreement[]
   }) {
-    this.id = params.id
-    this.type = params.type
-    this.isRequired = params.isRequired
-    this.title = params.title
-    this.content = params.content
-    this.createdAt = params.createdAt ?? new Date()
-    this.updatedAt = params.updatedAt ?? new Date()
-    this.deletedAt = params.deletedAt
-    this.userAgreements = params.userAgreements
+    this.id = param.id
+    this.type = param.type
+    this.isRequired = param.isRequired
+    this.title = param.title
+    this.content = param.content
+    this.createdAt = param.createdAt ?? new Date()
+    this.updatedAt = param.updatedAt ?? new Date()
+    this.deletedAt = param.deletedAt
+    this.userAgreements = param.userAgreements
   }
 }

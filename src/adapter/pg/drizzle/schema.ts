@@ -1,19 +1,23 @@
 import {
   pgTable,
-  timestamp,
   serial,
   varchar,
-  integer,
+  timestamp,
   boolean,
   text,
+  integer,
+  jsonb,
+  bigint,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import {
-  Permission,
-  SubscriptionPlan,
+  UserPlan,
+  UserPermission,
   SubscriptionStatus,
   TermType,
-} from 'src/shared/type/enum.type'
+  Region,
+  Currency,
+} from 'src/shared/enum/enum'
 
 const timestampColumns = {
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -28,65 +32,66 @@ export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   email: varchar('email').notNull().unique(),
   name: varchar('name').notNull(),
-  plan: varchar('plan').$type<SubscriptionPlan>().notNull(),
-  permissions: varchar('permissions').array().$type<Permission[]>().notNull(),
+  plan: varchar('plan').$type<UserPlan>().notNull(),
+  permissions: varchar('permissions')
+    .array()
+    .$type<UserPermission[]>()
+    .notNull(),
   ...timestampColumns,
 })
+
+export const usersRelations = relations(users, ({ many }) => ({
+  subscriptions: many(subscriptions),
+  userAgreements: many(userAgreements),
+  projects: many(projects),
+}))
 
 export const subscriptions = pgTable('subscriptions', {
   id: serial('id').primaryKey(),
   userId: integer('user_id')
-    .references(() => users.id)
-    .notNull(),
-  plan: varchar('plan').$type<SubscriptionPlan>().notNull(),
+    .notNull()
+    .references(() => users.id),
+  plan: varchar('plan').$type<UserPlan>().notNull(),
   status: varchar('status').$type<SubscriptionStatus>().notNull(),
-  startedAt: timestamp('started_at').defaultNow().notNull(),
-  endedAt: timestamp('ended_at').notNull(),
-  cancelledAt: timestamp('cancelled_at'),
+  startedAt: timestamp('started_at', { mode: 'date' }).notNull(),
+  endedAt: timestamp('ended_at', { mode: 'date' }).notNull(),
+  cancelledAt: timestamp('cancelled_at', { mode: 'date' }),
   ...timestampColumns,
 })
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
+}))
 
 export const terms = pgTable('terms', {
   id: serial('id').primaryKey(),
-  type: varchar('type').$type<TermType>().notNull(),
+  type: varchar('type').$type<TermType>().notNull().unique(),
+  isRequired: boolean('is_required').notNull(),
   title: varchar('title').notNull(),
   content: text('content').notNull(),
-  isRequired: boolean('is_required').notNull(),
   ...timestampColumns,
 })
-
-export const userAgreements = pgTable('user_agreements', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .references(() => users.id)
-    .notNull(),
-  termId: integer('term_id')
-    .references(() => terms.id)
-    .notNull(),
-  hasAgreed: boolean('has_agreed').notNull(),
-  ...timestampColumns,
-})
-
-export const userRelations = relations(users, ({ many }) => ({
-  subscriptions: many(subscriptions),
-  userAgreements: many(userAgreements),
-}))
-
-export const subscriptionHistoryRelations = relations(
-  subscriptions,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [subscriptions.userId],
-      references: [users.id],
-    }),
-  }),
-)
 
 export const termsRelations = relations(terms, ({ many }) => ({
   userAgreements: many(userAgreements),
 }))
 
-export const userAgreementRelations = relations(userAgreements, ({ one }) => ({
+export const userAgreements = pgTable('user_agreements', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  termId: integer('term_id')
+    .notNull()
+    .references(() => terms.id),
+  hasAgreed: boolean('has_agreed').notNull(),
+  ...timestampColumns,
+})
+
+export const userAgreementsRelations = relations(userAgreements, ({ one }) => ({
   user: one(users, {
     fields: [userAgreements.userId],
     references: [users.id],
@@ -94,5 +99,209 @@ export const userAgreementRelations = relations(userAgreements, ({ one }) => ({
   term: one(terms, {
     fields: [userAgreements.termId],
     references: [terms.id],
+  }),
+}))
+
+export const projects = pgTable('projects', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  name: varchar('name').notNull(),
+  industryPath: varchar('industry_path').notNull(),
+  ...timestampColumns,
+})
+
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  user: one(users, {
+    fields: [projects.userId],
+    references: [users.id],
+  }),
+  ideas: many(ideas),
+  analyses: many(analysisOverview),
+}))
+
+export const ideas = pgTable('ideas', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id')
+    .notNull()
+    .references(() => projects.id),
+  problem: text('problem').notNull(),
+  motivation: text('motivation').notNull(),
+  features: text('features').notNull(),
+  method: text('method').notNull(),
+  deliverable: text('deliverable').notNull(),
+  ...timestampColumns,
+})
+
+export const ideasRelations = relations(ideas, ({ one }) => ({
+  project: one(projects, {
+    fields: [ideas.projectId],
+    references: [projects.id],
+  }),
+}))
+
+export const analysisOverview = pgTable('analysis_overview', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id')
+    .notNull()
+    .references(() => projects.id),
+  summary: varchar('summary').notNull(),
+  industryPath: varchar('industry_path').notNull(),
+  review: varchar('review').notNull(),
+  similarServicesScore: integer('similar_services_score').notNull(),
+  limitationsScore: integer('limitations_score').notNull(),
+  opportunitiesScore: integer('opportunities_score').notNull(),
+  similarServices: jsonb('similar_services').$type<
+    {
+      description: string
+      logo_url: string
+      website_url: string
+      tags: string[]
+      summary: string
+    }[]
+  >(),
+  supportPrograms: jsonb('support_programs').$type<
+    {
+      name: string
+      organizer: string
+      url: string
+      start_date: Date
+      end_date: Date
+    }[]
+  >(),
+  targetMarkets: jsonb('target_markets').$type<
+    {
+      target: string
+      icon_url: string
+      order: number
+      reasons: string[]
+      appeal: string[]
+      online_activity: string[]
+      online_channels: string[]
+      offline_channels: string[]
+    }[]
+  >(),
+  marketingStrategies: jsonb('marketing_strategies').$type<
+    {
+      title: string
+      details: {
+        label: string
+        description: string
+      }[]
+    }[]
+  >(),
+  businessModel: jsonb('business_model')
+    .$type<{
+      summary: string
+      value_prop: {
+        content: string
+        details: {
+          label: string
+          description: string
+        }[]
+      }
+      revenue: {
+        label: string
+        description: string
+        details: string[]
+      }[]
+      investments: {
+        order: number
+        section: string
+        details: {
+          label: string
+          description: string
+        }[]
+      }[]
+    }>()
+    .notNull(),
+  opportunities: jsonb('opportunities').$type<
+    {
+      title: string
+      description: string
+    }[]
+  >(),
+  limitations: jsonb('limitations').$type<
+    {
+      category: string
+      detail: string
+      impact: string
+      solution: string
+    }[]
+  >(),
+  teamRequirements: jsonb('team_requirements').$type<
+    {
+      order: number
+      role: string
+      skills: string[]
+      tasks: string[]
+      salary_min: number
+      salary_max: number
+      currency: string
+    }[]
+  >(),
+  ...timestampColumns,
+})
+
+export const analysisOverviewRelations = relations(
+  analysisOverview,
+  ({ one }) => ({
+    project: one(projects, {
+      fields: [analysisOverview.projectId],
+      references: [projects.id],
+    }),
+  }),
+)
+
+export const marketStats = pgTable('market_stats', {
+  id: serial('id').primaryKey(),
+  industryPath: varchar('industry_path').notNull(),
+  score: integer('score').notNull(),
+  ...timestampColumns,
+})
+
+export const marketStatsRelations = relations(marketStats, ({ many }) => ({
+  marketTrends: many(marketTrends),
+  avgRevenues: many(avgRevenues),
+}))
+
+export const marketTrends = pgTable('market_trends', {
+  id: serial('id').primaryKey(),
+  marketStatsId: integer('market_stats_id')
+    .notNull()
+    .references(() => marketStats.id),
+  region: varchar('region').$type<Region>().notNull(),
+  year: integer('year').notNull(),
+  volume: bigint('volume', { mode: 'number' }).notNull(),
+  currency: varchar('currency').$type<Currency>().notNull(),
+  growthRate: integer('growth_rate').notNull(),
+  source: varchar('source').notNull(),
+  ...timestampColumns,
+})
+
+export const marketTrendsRelations = relations(marketTrends, ({ one }) => ({
+  marketStats: one(marketStats, {
+    fields: [marketTrends.marketStatsId],
+    references: [marketStats.id],
+  }),
+}))
+
+export const avgRevenues = pgTable('avg_revenues', {
+  id: serial('id').primaryKey(),
+  marketStatsId: integer('market_stats_id')
+    .notNull()
+    .references(() => marketStats.id),
+  region: varchar('region').$type<Region>().notNull(),
+  amount: bigint('amount', { mode: 'number' }).notNull(),
+  currency: varchar('currency').$type<Currency>().notNull(),
+  source: varchar('source').notNull(),
+  ...timestampColumns,
+})
+
+export const avgRevenuesRelations = relations(avgRevenues, ({ one }) => ({
+  marketStats: one(marketStats, {
+    fields: [avgRevenues.marketStatsId],
+    references: [marketStats.id],
   }),
 }))

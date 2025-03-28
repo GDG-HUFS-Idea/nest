@@ -16,7 +16,7 @@ export class User {
   subscriptions?: Subscription[]
   userAgreements?: UserAgreement[]
 
-  constructor(params: {
+  constructor(param: {
     email: string
     name: string
     plan: UserPlan
@@ -28,15 +28,15 @@ export class User {
     subscriptions?: Subscription[]
     userAgreements?: UserAgreement[]
   }) {
-    this.email = params.email
-    this.name = params.name
-    this.plan = params.plan
-    this.permissions = params.permissions
-    this.id = params.id
-    this.createdAt = params.createdAt ?? new Date()
-    this.updatedAt = params.updatedAt ?? new Date()
-    this.deletedAt = params.deletedAt
-    this.subscriptions = params.subscriptions
-    this.userAgreements = params.userAgreements
+    this.email = param.email
+    this.name = param.name
+    this.plan = param.plan
+    this.permissions = param.permissions
+    this.id = param.id
+    this.createdAt = param.createdAt ?? new Date()
+    this.updatedAt = param.updatedAt ?? new Date()
+    this.deletedAt = param.deletedAt
+    this.subscriptions = param.subscriptions
+    this.userAgreements = param.userAgreements
   }
 }
