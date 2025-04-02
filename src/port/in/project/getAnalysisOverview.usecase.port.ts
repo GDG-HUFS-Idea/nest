@@ -1,4 +1,4 @@
-import { GetAnalysisOverviewUsecaseDto } from 'src/adapter/app/dto/project/getAnalysisOverviewUsecaseDto'
+import { GetAnalysisOverviewUsecaseDto } from 'src/adapter/app/dto/project/getAnalysisOverview.usecase.dto'
 import { Currency, Region } from 'src/shared/enum/enum'
 
 export const GET_ANALYSIS_OVERVIEW_USECASE = Symbol(
