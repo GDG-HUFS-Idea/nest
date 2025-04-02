@@ -9,55 +9,54 @@ import {
   GetMyProjectListUsecaseRes,
 } from 'src/port/in/project/getMyProjectList.usecase.port'
 import { GetMyProjectListUsecaseDto } from 'src/adapter/app/dto/project/getMyProjectList.usecase.dto'
-import { ProjectRepoPort } from 'src/port/out/repo/project.repo.port'
-import { PROJECT_REPO } from 'src/port/out/repo/project.repo.port'
-import { Project } from 'src/domain/project'
+import {
+  ProjectRepoPort,
+  PROJECT_REPO,
+} from 'src/port/out/repo/project.repo.port'
 
 @Injectable()
 export class GetMyProjectListUsecase implements GetMyProjectListUsecasePort {
   constructor(
-    @Inject(PROJECT_REPO)
-    private readonly projectRepo: ProjectRepoPort,
+    @Inject(PROJECT_REPO) private readonly projectRepo: ProjectRepoPort,
   ) {}
 
+  // 사용자 프로젝트 목록 조회 및 응답 반환
   async exec(
     dto: GetMyProjectListUsecaseDto,
     user: User,
   ): Promise<GetMyProjectListUsecaseRes> {
-    const projects = await this.retrieveUserProjects(
-      user.id,
-      dto.offset,
-      dto.limit,
-    )
-    return this.buildRes(projects)
+    const projects = await this.retrieveProjects(user.id, dto.offset, dto.limit)
+    return this.buildResponse(projects)
   }
 
-  // 사용자의 프로젝트 목록 조회
-  private async retrieveUserProjects(
+  // 프로젝트 데이터 조회
+  private async retrieveProjects(
     userId: number,
     offset: number,
     limit: number,
   ) {
-    let projects: Project[] | null
     try {
-      projects = await this.projectRepo.findManyByUserId({
-        userId: userId,
-        offset: offset,
-        limit: limit,
+      const projects = await this.projectRepo.findManyByUserId({
+        userId,
+        offset,
+        limit,
       })
+
+      if (!projects) {
+        throw new NotFoundException()
+      }
+
+      return projects
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error
+      }
       throw new BadGatewayException()
     }
-
-    if (!projects) {
-      throw new NotFoundException()
-    }
-
-    return projects
   }
 
   // 응답 데이터 구성
-  private buildRes(projects: Project[]): GetMyProjectListUsecaseRes {
+  private buildResponse(projects: any[]): GetMyProjectListUsecaseRes {
     return {
       projects: projects.map((project) => ({
         id: project.id!,
