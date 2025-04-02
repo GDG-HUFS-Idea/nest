@@ -17,16 +17,16 @@ export const analysisOverviewSeeds: InferInsertModel<
     similarServices: [
       {
         description: 'AI 기반 개인 맞춤형 다이어트 및 건강관리 플랫폼',
-        logo_url: 'https://example.com/noom-logo.png',
-        website_url: 'https://www.noom.com',
+        logoUrl: 'https://example.com/noom-logo.png',
+        websiteUrl: 'https://www.noom.com',
         tags: ['건강관리', '다이어트', 'AI 코칭', '습관 형성'],
         summary:
           'Noom은 심리학과 AI를 결합한 건강관리 앱으로, 사용자의 식습관과 운동 패턴을 분석하여 맞춤형 코칭을 제공합니다.',
       },
       {
         description: '개인화된 식단 추천과 영양 분석을 제공하는 건강관리 앱',
-        logo_url: 'https://example.com/lifesum-logo.png',
-        website_url: 'https://www.lifesum.com',
+        logoUrl: 'https://example.com/lifesum-logo.png',
+        websiteUrl: 'https://www.lifesum.com',
         tags: ['영양관리', '식단 추천', '건강 트래킹', '라이프스타일'],
         summary:
           'Lifesum은 사용자의 건강 목표와 선호도에 맞는 맞춤형 식단과 영양 조언을 제공하는 앱입니다.',
@@ -37,33 +37,33 @@ export const analysisOverviewSeeds: InferInsertModel<
         name: '디지털 헬스케어 스타트업 육성 프로그램',
         organizer: '한국보건산업진흥원',
         url: 'https://example.com/digital-healthcare-program',
-        start_date: new Date('2025-04-01'),
-        end_date: new Date('2025-04-30'),
+        startDate: new Date('2025-04-01'),
+        endDate: new Date('2025-04-30'),
       },
       {
         name: '2025 혁신의료기기 실증지원사업',
         organizer: '식품의약품안전처',
         url: 'https://example.com/innovative-medical-device',
-        start_date: new Date('2025-05-15'),
-        end_date: new Date('2025-06-15'),
+        startDate: new Date('2025-05-15'),
+        endDate: new Date('2025-06-15'),
       },
     ],
     targetMarkets: [
       {
         target: '30-40대 건강관리에 관심 있는 직장인',
-        icon_url: 'https://undraw.co/search/business-man',
+        iconUrl: 'https://undraw.co/search/business-man',
         order: 1,
         reasons: [
           '건강관리 필요성은 인식하지만 시간적 여유가 부족한 집단',
           '디지털 기기 활용도가 높고 구매력이 있음',
         ],
         appeal: ['바쁜 일상 속에서도 손쉽게 관리할 수 있는 맞춤형 건강 솔루션'],
-        online_activity: [
+        onlineActivity: [
           '유튜브에서 건강 콘텐츠 시청',
           '인스타그램에서 건강식품/운동 관련 계정 팔로우',
         ],
-        online_channels: ['인스타그램', '유튜브', '네이버/구글 검색'],
-        offline_channels: ['헬스장/피트니스 센터', '건강검진센터'],
+        onlineChannels: ['인스타그램', '유튜브', '네이버/구글 검색'],
+        offlineChannels: ['헬스장/피트니스 센터', '건강검진센터'],
       },
     ],
     marketingStrategies: [
@@ -85,7 +85,7 @@ export const analysisOverviewSeeds: InferInsertModel<
     ],
     businessModel: {
       summary: '구독 기반 헬스케어 플랫폼',
-      value_prop: {
+      valueProp: {
         content:
           '사용자의 건강 데이터를 AI로 분석하여 개인화된 건강관리 솔루션을 제공하는 플랫폼',
         details: [
@@ -157,8 +157,8 @@ export const analysisOverviewSeeds: InferInsertModel<
           '추천 시스템 구축',
           '데이터 파이프라인 설계',
         ],
-        salary_min: 80000000,
-        salary_max: 120000000,
+        salaryMin: 80000000,
+        salaryMax: 120000000,
         currency: 'KRW',
       },
       {
@@ -170,8 +170,8 @@ export const analysisOverviewSeeds: InferInsertModel<
           '건강 콘텐츠 검증',
           '임상적 유효성 평가',
         ],
-        salary_min: 70000000,
-        salary_max: 100000000,
+        salaryMin: 70000000,
+        salaryMax: 100000000,
         currency: 'KRW',
       },
     ],
@@ -189,16 +189,16 @@ export const analysisOverviewSeeds: InferInsertModel<
     similarServices: [
       {
         description: '실시간 공기질 모니터링 및 분석 플랫폼',
-        logo_url: 'https://example.com/airvisual-logo.png',
-        website_url: 'https://www.iqair.com',
+        logoUrl: 'https://example.com/airvisual-logo.png',
+        websiteUrl: 'https://www.iqair.com',
         tags: ['대기질', '모니터링', '데이터 분석', '환경'],
         summary:
           'IQAir의 AirVisual은 전 세계 공기질 데이터를 수집하여 실시간 분석 및 예측 정보를 제공하는 플랫폼입니다.',
       },
       {
         description: '도시 소음 매핑 및 모니터링 시스템',
-        logo_url: 'https://example.com/soundscape-logo.png',
-        website_url: 'https://www.soundscape-platform.org',
+        logoUrl: 'https://example.com/soundscape-logo.png',
+        websiteUrl: 'https://www.soundscape-platform.org',
         tags: ['소음 측정', '도시 환경', '스마트시티', '매핑'],
         summary:
           'Soundscape는 도시 내 소음 수준을 측정하고 매핑하여 소음 오염을 관리하는 데 도움을 주는 플랫폼입니다.',
@@ -209,46 +209,46 @@ export const analysisOverviewSeeds: InferInsertModel<
         name: '2025 스마트시티 챌린지',
         organizer: '국토교통부',
         url: 'https://example.com/smart-city-challenge',
-        start_date: new Date('2025-03-01'),
-        end_date: new Date('2025-09-30'),
+        startDate: new Date('2025-03-01'),
+        endDate: new Date('2025-09-30'),
       },
       {
         name: '환경기술개발사업',
         organizer: '환경부',
         url: 'https://example.com/env-tech-development',
-        start_date: new Date('2025-04-15'),
-        end_date: new Date('2025-10-15'),
+        startDate: new Date('2025-04-15'),
+        endDate: new Date('2025-10-15'),
       },
     ],
     targetMarkets: [
       {
         target: '지방자치단체',
-        icon_url: 'https://undraw.co/search/city',
+        iconUrl: 'https://undraw.co/search/city',
         order: 1,
         reasons: ['환경 모니터링 의무화', '스마트시티 프로젝트 증가'],
         appeal: [
           '비용 효율적인 환경 모니터링 솔루션',
           '시민 참여형 데이터 수집 플랫폼',
         ],
-        online_activity: [
+        onlineActivity: [
           '정부 환경 정책 검색',
           '환경 관련 뉴스 및 보고서 확인',
         ],
-        online_channels: ['정부 포털', '환경 정책 뉴스레터'],
-        offline_channels: ['환경 정책 포럼', '스마트시티 컨퍼런스'],
+        onlineChannels: ['정부 포털', '환경 정책 뉴스레터'],
+        offlineChannels: ['환경 정책 포럼', '스마트시티 컨퍼런스'],
       },
       {
         target: '환경에 관심있는 일반 시민',
-        icon_url: 'https://undraw.co/search/people',
+        iconUrl: 'https://undraw.co/search/people',
         order: 2,
         reasons: ['환경 건강에 대한 관심 증가', '참여형 시민과학 트렌드'],
         appeal: [
           '개인 주변 환경 데이터 실시간 확인',
           '커뮤니티 기반 환경 개선 참여',
         ],
-        online_activity: ['환경 관련 SNS 활동', '환경 앱 사용'],
-        online_channels: ['SNS', '환경 커뮤니티 앱'],
-        offline_channels: ['시민단체 활동', '환경 캠페인'],
+        onlineActivity: ['환경 관련 SNS 활동', '환경 앱 사용'],
+        onlineChannels: ['SNS', '환경 커뮤니티 앱'],
+        offlineChannels: ['시민단체 활동', '환경 캠페인'],
       },
     ],
     marketingStrategies: [
@@ -284,7 +284,7 @@ export const analysisOverviewSeeds: InferInsertModel<
     ],
     businessModel: {
       summary: 'SaaS 기반 환경 모니터링 플랫폼',
-      value_prop: {
+      valueProp: {
         content:
           'IoT 센서 네트워크를 통해 수집된 환경 데이터를 실시간으로 분석하고 시각화하는 플랫폼',
         details: [
@@ -399,8 +399,8 @@ export const analysisOverviewSeeds: InferInsertModel<
           '데이터 전송 시스템 개발',
           '배터리 최적화',
         ],
-        salary_min: 60000000,
-        salary_max: 90000000,
+        salaryMin: 60000000,
+        salaryMax: 90000000,
         currency: 'KRW',
       },
       {
@@ -412,8 +412,8 @@ export const analysisOverviewSeeds: InferInsertModel<
           '예측 모델 구축',
           '데이터 검증 시스템 개발',
         ],
-        salary_min: 65000000,
-        salary_max: 95000000,
+        salaryMin: 65000000,
+        salaryMax: 95000000,
         currency: 'KRW',
       },
       {
@@ -421,8 +421,8 @@ export const analysisOverviewSeeds: InferInsertModel<
         role: '풀스택 개발자',
         skills: ['React', 'Node.js', 'AWS', '데이터 시각화'],
         tasks: ['대시보드 개발', 'API 서비스 구축', '데이터베이스 설계'],
-        salary_min: 55000000,
-        salary_max: 85000000,
+        salaryMin: 55000000,
+        salaryMax: 85000000,
         currency: 'KRW',
       },
     ],

@@ -27,7 +27,11 @@ import { GetMyProjectListUsecase } from 'src/usecase/project/getMyProjectList.us
 import { GET_ANALYSIS_OVERVIEW_USECASE } from 'src/port/in/project/getAnalysisOverview.usecase.port'
 import { GET_MY_PROJECT_LIST_USECASE } from 'src/port/in/project/getMyProjectList.usecase.port'
 import { ProjectController } from './controller/project.controller'
-
+import { AnalyzeIdeaUsecase } from 'src/usecase/project/analyzeIdea.usecase'
+import { WatchAnalysisStatusUsecase } from 'src/usecase/project/watchAnalysisStatus.usecase'
+import { ANALYZE_IDEA_USECASE } from 'src/port/in/project/analyzeIdea.usecase.port'
+import { WATCH_ANALYSIS_STATUS_USECASE } from 'src/port/in/project/watchAnalysisStatus.usecase.port'
+import { AiModule } from '../ai/ai.module'
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -42,6 +46,7 @@ import { ProjectController } from './controller/project.controller'
 
     PgModule,
     RedisModule,
+    AiModule,
   ],
 
   controllers: [AuthController, TermController, ProjectController],
@@ -68,6 +73,11 @@ import { ProjectController } from './controller/project.controller'
       useClass: GetAnalysisOverviewUsecase,
     },
     { provide: GET_MY_PROJECT_LIST_USECASE, useClass: GetMyProjectListUsecase },
+    { provide: ANALYZE_IDEA_USECASE, useClass: AnalyzeIdeaUsecase },
+    {
+      provide: WATCH_ANALYSIS_STATUS_USECASE,
+      useClass: WatchAnalysisStatusUsecase,
+    },
   ],
 })
 export class AppModule {}

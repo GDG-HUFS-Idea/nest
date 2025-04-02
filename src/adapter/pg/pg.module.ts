@@ -14,6 +14,9 @@ import { MARKET_STATS_REPO } from 'src/port/out/repo/marketStats.repo.port'
 import { MarketStatsRepo } from './repo/marketStats.repo'
 import { PROJECT_REPO } from 'src/port/out/repo/project.repo.port'
 import { ProjectRepo } from './repo/project.repo'
+import { ANALYSIS_OVERVIEW_REPO } from 'src/port/out/repo/analysisOverview.repo.port'
+import { AnalysisOverviewRepo } from './repo/analysisOverview.repo'
+
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true })],
 
@@ -27,6 +30,7 @@ import { ProjectRepo } from './repo/project.repo'
     { provide: USER_AGREEMENT_REPO, useClass: UserAgreementRepo },
     { provide: MARKET_STATS_REPO, useClass: MarketStatsRepo },
     { provide: PROJECT_REPO, useClass: ProjectRepo },
+    { provide: ANALYSIS_OVERVIEW_REPO, useClass: AnalysisOverviewRepo },
   ],
 
   exports: [
@@ -36,6 +40,7 @@ import { ProjectRepo } from './repo/project.repo'
     USER_AGREEMENT_REPO,
     MARKET_STATS_REPO,
     PROJECT_REPO,
+    ANALYSIS_OVERVIEW_REPO,
   ],
 })
 export class PgModule {}

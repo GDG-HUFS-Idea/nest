@@ -2,15 +2,57 @@ import { Injectable } from '@nestjs/common'
 import { PgService } from '../pg.service'
 import * as schema from '../drizzle/schema'
 import { RdbClient } from 'src/shared/type/rdbClient.type'
-import { and, eq, isNull } from 'drizzle-orm'
-import { mapAnalysisOverview } from '../mapper/mapAnalysisOverview'
+import { and, eq, isNull, desc } from 'drizzle-orm'
 import { mapProject } from '../mapper/mapProject'
 import { ProjectRepoPort } from 'src/port/out/repo/project.repo.port'
 import { Project } from 'src/domain/project'
+import { mapAnalysisOverview } from '../mapper/mapAnalysisOverview'
 
 @Injectable()
 export class ProjectRepo implements ProjectRepoPort {
   constructor(private readonly pgService: PgService) {}
+
+  async saveOne(param: {
+    project: Project
+    ctx?: RdbClient
+  }): Promise<Project | null> {
+    const ctx = param.ctx ?? this.pgService.getClient()
+    const project = param.project
+
+    if (project.id) {
+      const [updatedProject] = await ctx
+        .update(schema.projects)
+        .set({
+          name: project.name,
+          industryPath: project.industryPath,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(schema.projects.id, project.id),
+            isNull(schema.projects.deletedAt),
+          ),
+        )
+        .returning()
+
+      if (!updatedProject) return null
+      return mapProject(updatedProject)
+    } else {
+      const [newProject] = await ctx
+        .insert(schema.projects)
+        .values({
+          userId: project.userId,
+          name: project.name,
+          industryPath: project.industryPath,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning()
+
+      if (!newProject) return null
+      return mapProject(newProject)
+    }
+  }
 
   async findOneById(param: {
     id: number
@@ -43,19 +85,25 @@ export class ProjectRepo implements ProjectRepoPort {
         and(
           eq(schema.projects.id, param.id),
           isNull(schema.projects.deletedAt),
-          isNull(schema.analysisOverview.deletedAt),
         ),
       )
-      .innerJoin(
+      .leftJoin(
         schema.analysisOverview,
-        eq(schema.analysisOverview.projectId, schema.projects.id),
+        and(
+          eq(schema.analysisOverview.projectId, schema.projects.id),
+          isNull(schema.analysisOverview.deletedAt),
+        ),
       )
 
     if (!row) return null
 
     const project = mapProject(row.projects)
-    const analysisOverview = mapAnalysisOverview(row.analysis_overview)
-    project.analysisOverview = analysisOverview
+
+    if (row.analysis_overview) {
+      const analysisOverview = mapAnalysisOverview(row.analysis_overview)
+      project.analysisOverview = analysisOverview
+    }
+
     return project
   }
 
@@ -74,9 +122,10 @@ export class ProjectRepo implements ProjectRepoPort {
       ),
       offset: param.offset,
       limit: param.limit,
+      orderBy: desc(schema.projects.createdAt),
     })
 
-    if (!projects) return null
+    if (!projects.length) return null
 
     return projects.map(mapProject)
   }
