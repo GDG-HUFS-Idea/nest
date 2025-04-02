@@ -11,10 +11,14 @@ import {
   GetAnalysisOverviewUsecasePort,
   GetAnalysisOverviewUsecaseRes,
 } from 'src/port/in/project/getAnalysisOverview.usecase.port'
-import { ProjectRepoPort } from 'src/port/out/repo/project.repo.port'
-import { PROJECT_REPO } from 'src/port/out/repo/project.repo.port'
-import { MarketStatsRepoPort } from 'src/port/out/repo/marketStats.repo.port'
-import { MARKET_STATS_REPO } from 'src/port/out/repo/marketStats.repo.port'
+import {
+  ProjectRepoPort,
+  PROJECT_REPO,
+} from 'src/port/out/repo/project.repo.port'
+import {
+  MarketStatsRepoPort,
+  MARKET_STATS_REPO,
+} from 'src/port/out/repo/marketStats.repo.port'
 import { MarketStats } from 'src/domain/marketStats'
 import { Project } from 'src/domain/project'
 
@@ -23,12 +27,12 @@ export class GetAnalysisOverviewUsecase
   implements GetAnalysisOverviewUsecasePort
 {
   constructor(
-    @Inject(PROJECT_REPO)
-    private readonly projectRepo: ProjectRepoPort,
+    @Inject(PROJECT_REPO) private readonly projectRepo: ProjectRepoPort,
     @Inject(MARKET_STATS_REPO)
     private readonly marketStatsRepo: MarketStatsRepoPort,
   ) {}
 
+  // 프로젝트와 시장 통계 정보를 조회하여 분석 개요 응답 반환
   async exec(
     dto: GetAnalysisOverviewUsecaseDto,
     user: User,
@@ -38,60 +42,84 @@ export class GetAnalysisOverviewUsecase
       project.analysisOverview!.industryPath,
     )
 
-    return this.buildRes(project, marketStats)
+    return this.buildResponse(project, marketStats)
   }
 
-  // 프로젝트 조회 및 사용자 접근 권한 검증
-  private async retrieveProject(projectId: number, userId: number) {
-    const project = await this.projectRepo.findOneByIdJoinAnalysisOverview({
-      id: projectId,
-    })
-
-    if (!project) {
-      throw new NotFoundException()
-    }
-
-    if (project.userId !== userId) {
-      throw new ForbiddenException()
-    }
-
-    return project
-  }
-
-  // 시장 통계 데이터 조회
-  private async retrieveMarketStats(industryPath: string) {
-    const duration = 5
-    let marketStats: MarketStats | null
-
+  // 프로젝트 조회 및 접근 권한 검증
+  private async retrieveProject(
+    projectId: number,
+    userId: number,
+  ): Promise<Project> {
     try {
-      marketStats = await this.marketStatsRepo.findOneByIndustryPath({
-        industryPath: industryPath,
-        duration,
+      const project = await this.projectRepo.findOneByIdJoinAnalysisOverview({
+        id: projectId,
       })
-    } catch {
+
+      if (!project) {
+        throw new NotFoundException()
+      }
+
+      if (project.userId !== userId) {
+        throw new ForbiddenException()
+      }
+
+      return project
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error
+      }
       throw new BadGatewayException()
     }
-
-    if (
-      marketStats?.domesticMarketTrends.length != duration ||
-      marketStats?.globalMarketTrends.length != duration
-    ) {
-      throw new InternalServerErrorException()
-    }
-    if (!marketStats) {
-      throw new NotFoundException()
-    }
-
-    return marketStats
   }
 
-  // 응답 데이터 빌드
-  private buildRes(
+  // 시장 통계 데이터 조회 및 유효성 검증
+  private async retrieveMarketStats(
+    industryPath: string,
+  ): Promise<MarketStats> {
+    const duration = 5
+    const currentYear = new Date().getFullYear()
+    const fromYear = currentYear - duration + 1
+    const toYear = currentYear
+
+    try {
+      const marketStats = await this.marketStatsRepo.findOneByIndustryPath({
+        industryPath,
+        fromYear,
+        toYear,
+      })
+
+      if (!marketStats) {
+        throw new NotFoundException()
+      }
+
+      // 국내 및 글로벌 시장 트렌드가 모두 duration 개수만큼 있는지 확인
+      if (
+        marketStats.domesticMarketTrends.length != duration ||
+        marketStats.globalMarketTrends.length != duration
+      ) {
+        throw new InternalServerErrorException()
+      }
+
+      return marketStats
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof InternalServerErrorException
+      ) {
+        throw error
+      }
+      throw new BadGatewayException()
+    }
+  }
+
+  // 응답 데이터 구성
+  private buildResponse(
     project: Project,
     marketStats: MarketStats,
-  ):
-    | GetAnalysisOverviewUsecaseRes
-    | PromiseLike<GetAnalysisOverviewUsecaseRes> {
+  ): GetAnalysisOverviewUsecaseRes {
     return {
       summary: project.analysisOverview!.summary,
       review: project.analysisOverview!.review,
@@ -216,14 +244,14 @@ export class GetAnalysisOverviewUsecase
         })),
       },
       team_requirements: project.analysisOverview!.teamRequirements.map(
-        (teamRequirement) => ({
-          order: teamRequirement.order,
-          role: teamRequirement.role,
-          skills: teamRequirement.skills,
-          tasks: teamRequirement.tasks,
-          salary_min: teamRequirement.salaryMin,
-          salary_max: teamRequirement.salaryMax,
-          currency: teamRequirement.currency,
+        (requirement) => ({
+          order: requirement.order,
+          role: requirement.role,
+          skills: requirement.skills,
+          tasks: requirement.tasks,
+          salary_min: requirement.salaryMin,
+          salary_max: requirement.salaryMax,
+          currency: requirement.currency,
         }),
       ),
     }
