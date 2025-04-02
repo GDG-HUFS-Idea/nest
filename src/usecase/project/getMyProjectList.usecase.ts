@@ -7,8 +7,8 @@ import {
 import {
   GetMyProjectListUsecasePort,
   GetMyProjectListUsecaseRes,
-} from 'src/port/in/project/getMyProjectListUsecase.port'
-import { GetMyProjectListUsecaseDto } from 'src/adapter/app/dto/project/getMyProjectListUsecaseDto'
+} from 'src/port/in/project/getMyProjectList.usecase.port'
+import { GetMyProjectListUsecaseDto } from 'src/adapter/app/dto/project/getMyProjectList.usecase.dto'
 import { ProjectRepoPort } from 'src/port/out/repo/project.repo.port'
 import { PROJECT_REPO } from 'src/port/out/repo/project.repo.port'
 import { Project } from 'src/domain/project'

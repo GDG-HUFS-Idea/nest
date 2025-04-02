@@ -6,11 +6,11 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common'
-import { GetAnalysisOverviewUsecaseDto } from 'src/adapter/app/dto/project/getAnalysisOverviewUsecaseDto'
+import { GetAnalysisOverviewUsecaseDto } from 'src/adapter/app/dto/project/getAnalysisOverview.usecase.dto'
 import {
   GetAnalysisOverviewUsecasePort,
   GetAnalysisOverviewUsecaseRes,
-} from 'src/port/in/project/getAnalysisOverviewUsecase.port'
+} from 'src/port/in/project/getAnalysisOverview.usecase.port'
 import { ProjectRepoPort } from 'src/port/out/repo/project.repo.port'
 import { PROJECT_REPO } from 'src/port/out/repo/project.repo.port'
 import { MarketStatsRepoPort } from 'src/port/out/repo/marketStats.repo.port'

@@ -2,15 +2,15 @@ import { Controller, Get, Inject, Query, UseGuards } from '@nestjs/common'
 import {
   GET_ANALYSIS_OVERVIEW_USECASE,
   GetAnalysisOverviewUsecasePort,
-} from 'src/port/in/project/getAnalysisOverviewUsecase.port'
+} from 'src/port/in/project/getAnalysisOverview.usecase.port'
 import {
   GET_MY_PROJECT_LIST_USECASE,
   GetMyProjectListUsecasePort,
-} from 'src/port/in/project/getMyProjectListUsecase.port'
-import { GetAnalysisOverviewUsecaseDto } from '../dto/project/getAnalysisOverviewUsecaseDto'
+} from 'src/port/in/project/getMyProjectList.usecase.port'
+import { GetAnalysisOverviewUsecaseDto } from '../dto/project/getAnalysisOverview.usecase.dto'
 import { User } from '../paramDecorator/user.decorator'
 import { JwtGuard } from '../auth/jwt/jwt.guard'
-import { GetMyProjectListUsecaseDto } from '../dto/project/getMyProjectListUsecaseDto'
+import { GetMyProjectListUsecaseDto } from '../dto/project/getMyProjectList.usecase.dto'
 @Controller('/projects')
 export class ProjectController {
   constructor(
