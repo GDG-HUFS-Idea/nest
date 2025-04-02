@@ -17,4 +17,6 @@ export interface ProjectRepoPort {
     id: number
     ctx?: RdbClient
   }): Promise<Project | null>
+
+  saveOne(param: { project: Project; ctx?: RdbClient }): Promise<Project | null>
 }

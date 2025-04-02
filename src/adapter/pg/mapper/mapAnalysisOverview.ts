@@ -18,8 +18,8 @@ export const mapAnalysisOverview = (
     similarServices: (analysisOverview.similarServices || []).map(
       (service) => ({
         description: service.description,
-        logoUrl: service.logo_url,
-        websiteUrl: service.website_url,
+        logoUrl: service.logoUrl,
+        websiteUrl: service.websiteUrl,
         tags: service.tags,
         summary: service.summary,
       }),
@@ -30,21 +30,21 @@ export const mapAnalysisOverview = (
         name: program.name,
         organizer: program.organizer,
         url: program.url,
-        startDate: new Date(program.start_date),
-        endDate: new Date(program.end_date),
+        startDate: new Date(program.startDate),
+        endDate: new Date(program.endDate),
       }),
     ),
 
     targetMarkets: (analysisOverview.targetMarkets || [])
       .map((market) => ({
         target: market.target,
-        iconUrl: market.icon_url,
+        iconUrl: market.iconUrl,
         order: market.order,
         reasons: market.reasons,
         appeal: market.appeal,
-        onlineActivity: market.online_activity,
-        onlineChannels: market.online_channels,
-        offlineChannels: market.offline_channels,
+        onlineActivity: market.onlineActivity,
+        onlineChannels: market.onlineChannels,
+        offlineChannels: market.offlineChannels,
       }))
       .sort((a, b) => a.order - b.order),
 
@@ -53,8 +53,8 @@ export const mapAnalysisOverview = (
     businessModel: {
       summary: analysisOverview.businessModel.summary,
       valueProp: {
-        content: analysisOverview.businessModel.value_prop.content,
-        details: analysisOverview.businessModel.value_prop.details,
+        content: analysisOverview.businessModel.valueProp.content,
+        details: analysisOverview.businessModel.valueProp.details,
       },
       revenue: analysisOverview.businessModel.revenue.map((item) => ({
         label: item.label,
@@ -80,8 +80,8 @@ export const mapAnalysisOverview = (
         role: requirement.role,
         skills: requirement.skills,
         tasks: requirement.tasks,
-        salaryMin: requirement.salary_min,
-        salaryMax: requirement.salary_max,
+        salaryMin: requirement.salaryMin,
+        salaryMax: requirement.salaryMax,
         currency: requirement.currency,
       }))
       .sort((a, b) => a.order - b.order),

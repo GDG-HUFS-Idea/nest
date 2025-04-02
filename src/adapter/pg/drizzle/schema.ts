@@ -155,8 +155,8 @@ export const analysisOverview = pgTable('analysis_overview', {
   similarServices: jsonb('similar_services').$type<
     {
       description: string
-      logo_url: string
-      website_url: string
+      logoUrl: string
+      websiteUrl: string
       tags: string[]
       summary: string
     }[]
@@ -166,20 +166,20 @@ export const analysisOverview = pgTable('analysis_overview', {
       name: string
       organizer: string
       url: string
-      start_date: Date
-      end_date: Date
+      startDate: Date
+      endDate: Date
     }[]
   >(),
   targetMarkets: jsonb('target_markets').$type<
     {
       target: string
-      icon_url: string
+      iconUrl: string
       order: number
       reasons: string[]
       appeal: string[]
-      online_activity: string[]
-      online_channels: string[]
-      offline_channels: string[]
+      onlineActivity: string[]
+      onlineChannels: string[]
+      offlineChannels: string[]
     }[]
   >(),
   marketingStrategies: jsonb('marketing_strategies').$type<
@@ -194,7 +194,7 @@ export const analysisOverview = pgTable('analysis_overview', {
   businessModel: jsonb('business_model')
     .$type<{
       summary: string
-      value_prop: {
+      valueProp: {
         content: string
         details: {
           label: string
@@ -236,8 +236,8 @@ export const analysisOverview = pgTable('analysis_overview', {
       role: string
       skills: string[]
       tasks: string[]
-      salary_min: number
-      salary_max: number
+      salaryMin: number
+      salaryMax: number
       currency: string
     }[]
   >(),

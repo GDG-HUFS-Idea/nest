@@ -9,4 +9,9 @@ export interface MarketStatsRepoPort {
     duration: number
     ctx?: RdbClient
   }): Promise<MarketStats | null>
+
+  saveOne(param: {
+    marketStats: MarketStats
+    ctx?: RdbClient
+  }): Promise<MarketStats>
 }

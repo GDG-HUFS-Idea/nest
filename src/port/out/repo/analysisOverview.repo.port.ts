@@ -8,4 +8,9 @@ export interface AnalysisOverviewRepoPort {
     id: number
     ctx?: RdbClient
   }): Promise<AnalysisOverview | null>
+
+  saveOne(param: {
+    analysisOverview: AnalysisOverview
+    ctx?: RdbClient
+  }): Promise<AnalysisOverview | null>
 }
