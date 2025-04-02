@@ -3,7 +3,7 @@ import { MarketStatsRepoPort } from 'src/port/out/repo/marketStats.repo.port'
 import { PgService } from '../pg.service'
 import * as schema from '../drizzle/schema'
 import { RdbClient } from 'src/shared/type/rdbClient.type'
-import { and, eq, isNull, gt } from 'drizzle-orm'
+import { and, eq, isNull, gt, gte, between } from 'drizzle-orm'
 import { MarketStats } from 'src/domain/marketStats'
 import { mapMarketStats } from '../mapper/mapMarketStats'
 import { Region } from 'src/shared/enum/enum'
@@ -14,38 +14,33 @@ export class MarketStatsRepo implements MarketStatsRepoPort {
 
   async findOneByIndustryPath(param: {
     industryPath: string
-    duration: number
+    fromYear: number
+    toYear: number
     ctx?: RdbClient
   }): Promise<MarketStats | null> {
     const ctx = param.ctx ?? this.pgService.getClient()
-    const date = new Date()
-    date.setDate(date.getDate() - param.duration)
 
-    const marketStats = await ctx.query.marketStats.findFirst({
+    const result = await ctx.query.marketStats.findFirst({
       where: and(
         eq(schema.marketStats.industryPath, param.industryPath),
         isNull(schema.marketStats.deletedAt),
-        gt(schema.marketStats.createdAt, date),
       ),
+      with: {
+        marketTrends: {
+          where: and(
+            isNull(schema.marketTrends.deletedAt),
+            between(schema.marketTrends.year, param.fromYear, param.toYear),
+          ),
+        },
+        avgRevenues: {
+          where: isNull(schema.avgRevenues.deletedAt),
+        },
+      },
     })
 
-    if (!marketStats) return null
+    if (!result) return null
 
-    const marketTrends = await ctx.query.marketTrends.findMany({
-      where: and(
-        eq(schema.marketTrends.marketStatsId, marketStats.id),
-        isNull(schema.marketTrends.deletedAt),
-      ),
-    })
-
-    const avgRevenues = await ctx.query.avgRevenues.findMany({
-      where: and(
-        eq(schema.avgRevenues.marketStatsId, marketStats.id),
-        isNull(schema.avgRevenues.deletedAt),
-      ),
-    })
-
-    return mapMarketStats(marketStats, marketTrends, avgRevenues)
+    return mapMarketStats(result, result.marketTrends, result.avgRevenues)
   }
 
   async saveOne(param: {

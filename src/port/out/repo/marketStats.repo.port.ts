@@ -6,7 +6,8 @@ export const MARKET_STATS_REPO = Symbol('MARKET_STATS_REPO')
 export interface MarketStatsRepoPort {
   findOneByIndustryPath(param: {
     industryPath: string
-    duration: number
+    fromYear: number
+    toYear: number
     ctx?: RdbClient
   }): Promise<MarketStats | null>
 

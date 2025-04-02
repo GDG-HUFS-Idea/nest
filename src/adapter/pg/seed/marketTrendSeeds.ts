@@ -12,7 +12,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2021,
       volume: 25000000000,
       currency: Currency.KRW,
-      growthRate: 22,
+      growthRate: 0.22,
       source: 'https://example.com/korean-digital-health-2021',
     },
     {
@@ -22,7 +22,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2022,
       volume: 30000000000,
       currency: Currency.KRW,
-      growthRate: 20,
+      growthRate: 0.2,
       source: 'https://example.com/korean-digital-health-2022',
     },
     {
@@ -32,7 +32,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2023,
       volume: 36000000000,
       currency: Currency.KRW,
-      growthRate: 28,
+      growthRate: 0.28,
       source: 'https://example.com/korean-digital-health-2023',
     },
     {
@@ -42,7 +42,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2024,
       volume: 45000000000,
       currency: Currency.KRW,
-      growthRate: 25,
+      growthRate: 0.25,
       source: 'https://example.com/korean-digital-health-2024',
     },
     {
@@ -52,7 +52,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2025,
       volume: 56000000000,
       currency: Currency.KRW,
-      growthRate: 24,
+      growthRate: 0.24,
       source: 'https://example.com/korean-digital-health-forecast',
     },
     // 헬스케어 - 글로벌 시장 트렌드
@@ -63,7 +63,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2021,
       volume: 140000000000,
       currency: Currency.USD,
-      growthRate: 18,
+      growthRate: 0.18,
       source: 'https://example.com/global-digital-health-2021',
     },
     {
@@ -73,7 +73,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2022,
       volume: 170000000000,
       currency: Currency.USD,
-      growthRate: 21,
+      growthRate: 0.21,
       source: 'https://example.com/global-digital-health-2022',
     },
     {
@@ -83,7 +83,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2023,
       volume: 210000000000,
       currency: Currency.USD,
-      growthRate: 25,
+      growthRate: 0.25,
       source: 'https://example.com/global-digital-health-2023',
     },
     {
@@ -93,7 +93,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2024,
       volume: 260000000000,
       currency: Currency.USD,
-      growthRate: 24,
+      growthRate: 0.24,
       source: 'https://example.com/global-digital-health-2024',
     },
     {
@@ -103,7 +103,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2025,
       volume: 320000000000,
       currency: Currency.USD,
-      growthRate: 23,
+      growthRate: 0.23,
       source: 'https://example.com/global-digital-health-forecast',
     },
     // 환경 모니터링 - 국내 시장 트렌드
@@ -114,7 +114,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2021,
       volume: 15000000000,
       currency: Currency.KRW,
-      growthRate: 15,
+      growthRate: 0.15,
       source: 'https://example.com/korean-env-monitoring-2021',
     },
     {
@@ -124,7 +124,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2022,
       volume: 18000000000,
       currency: Currency.KRW,
-      growthRate: 20,
+      growthRate: 0.2,
       source: 'https://example.com/korean-env-monitoring-2022',
     },
     {
@@ -134,7 +134,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2023,
       volume: 22000000000,
       currency: Currency.KRW,
-      growthRate: 22,
+      growthRate: 0.22,
       source: 'https://example.com/korean-env-monitoring-2023',
     },
     {
@@ -144,7 +144,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2024,
       volume: 27000000000,
       currency: Currency.KRW,
-      growthRate: 23,
+      growthRate: 0.23,
       source: 'https://example.com/korean-env-monitoring-2024',
     },
     {
@@ -154,7 +154,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2025,
       volume: 33000000000,
       currency: Currency.KRW,
-      growthRate: 22,
+      growthRate: 0.22,
       source: 'https://example.com/korean-env-monitoring-forecast',
     },
     // 환경 모니터링 - 글로벌 시장 트렌드
@@ -165,7 +165,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2021,
       volume: 80000000000,
       currency: Currency.USD,
-      growthRate: 14,
+      growthRate: 0.14,
       source: 'https://example.com/global-env-monitoring-2021',
     },
     {
@@ -175,7 +175,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2022,
       volume: 95000000000,
       currency: Currency.USD,
-      growthRate: 19,
+      growthRate: 0.19,
       source: 'https://example.com/global-env-monitoring-2022',
     },
     {
@@ -185,7 +185,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2023,
       volume: 115000000000,
       currency: Currency.USD,
-      growthRate: 21,
+      growthRate: 0.21,
       source: 'https://example.com/global-env-monitoring-2023',
     },
     {
@@ -195,7 +195,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2024,
       volume: 135000000000,
       currency: Currency.USD,
-      growthRate: 17,
+      growthRate: 0.17,
       source: 'https://example.com/global-env-monitoring-2024',
     },
     {
@@ -205,7 +205,7 @@ export const marketTrendSeeds: InferInsertModel<typeof schema.marketTrends>[] =
       year: 2025,
       volume: 165000000000,
       currency: Currency.USD,
-      growthRate: 22,
+      growthRate: 0.22,
       source: 'https://example.com/global-env-monitoring-forecast',
     },
   ]

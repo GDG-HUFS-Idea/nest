@@ -8,6 +8,7 @@ import {
   integer,
   jsonb,
   bigint,
+  doublePrecision,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import {
@@ -275,7 +276,7 @@ export const marketTrends = pgTable('market_trends', {
   year: integer('year').notNull(),
   volume: bigint('volume', { mode: 'number' }).notNull(),
   currency: varchar('currency').$type<Currency>().notNull(),
-  growthRate: integer('growth_rate').notNull(),
+  growthRate: doublePrecision('growth_rate').notNull(),
   source: varchar('source').notNull(),
   ...timestampColumns,
 })
