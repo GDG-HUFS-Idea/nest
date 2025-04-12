@@ -1,8 +1,5 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common'
-import {
-  GET_TERMS_USECASE,
-  GetTermsUsecasePort,
-} from 'src/port/in/term/getTerms.usecase.port'
+import { GET_TERMS_USECASE, GetTermsUsecasePort } from 'src/port/in/term/getTerms.usecase.port'
 import { GetTermsUsecaseDto } from '../dto/term/getTerms.usecase.dto'
 
 @Controller('/terms')

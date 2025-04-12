@@ -1,9 +1,7 @@
 import * as schema from '../drizzle/schema'
 import { InferInsertModel } from 'drizzle-orm'
 
-export const userAgreementSeeds: InferInsertModel<
-  typeof schema.userAgreements
->[] = [
+export const userAgreementSeeds: InferInsertModel<typeof schema.userAgreements>[] = [
   // 사용자 1의 약관 동의
   {
     id: 1,

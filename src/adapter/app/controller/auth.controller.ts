@@ -1,30 +1,11 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  Inject,
-  Post,
-  Query,
-  Redirect,
-  UseGuards,
-} from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, Inject, Post, Query, Redirect, UseGuards } from '@nestjs/common'
 import { GoogleOauthGuard } from '../auth/oauth/googleOauth.guard'
-import {
-  CACHE_OAUTH_USECASE,
-  CacheOauthUsecasePort,
-} from 'src/port/in/auth/cacheOauth.usecase.port'
+import { CACHE_OAUTH_USECASE, CacheOauthUsecasePort } from 'src/port/in/auth/cacheOauth.usecase.port'
 import { OauthUser } from '../paramDecorator/oauthUser.decorator'
-import {
-  CALLBACK_OAUTH_USECASE,
-  CallbackOauthUsecasePort,
-} from 'src/port/in/auth/getOauthResult.usecase.port'
-import {
-  OAUTH_SIGN_UP_USECASE,
-  OauthSignUpUsecasePort,
-} from 'src/port/in/auth/oauthSignUp.usecase.port'
+import { CALLBACK_OAUTH_USECASE, CallbackOauthUsecasePort } from 'src/port/in/auth/getOauthResult.usecase.port'
+import { OAUTH_SIGNUP_USECASE, OauthSignupUsecasePort } from 'src/port/in/auth/oauthSignup.usecase.port'
 import { CallbackOauthUsecaseDto } from '../dto/auth/callbackOauth.usecase.dto'
-import { OauthSignUpUsecaseDto } from '../dto/auth/oauthSignUp.usecase.dto'
+import { OauthSignupUsecaseDto } from '../dto/auth/oauthSignup.usecase.dto'
 
 @Controller('/auth')
 export class AuthController {
@@ -33,8 +14,8 @@ export class AuthController {
     private readonly cacheHasAccount: CacheOauthUsecasePort,
     @Inject(CALLBACK_OAUTH_USECASE)
     private readonly callbackOauthUsecase: CallbackOauthUsecasePort,
-    @Inject(OAUTH_SIGN_UP_USECASE)
-    private readonly oauthSignUpUsecase: OauthSignUpUsecasePort,
+    @Inject(OAUTH_SIGNUP_USECASE)
+    private readonly oauthSignupUsecase: OauthSignupUsecasePort,
   ) {}
 
   @Get('/oauth/google')
@@ -58,8 +39,8 @@ export class AuthController {
 
   @Post('/oauth/signup')
   @HttpCode(200)
-  async oauthSignUp(@Body() dto: OauthSignUpUsecaseDto) {
-    const result = await this.oauthSignUpUsecase.exec(dto)
+  async oauthSignUp(@Body() dto: OauthSignupUsecaseDto) {
+    const result = await this.oauthSignupUsecase.exec(dto)
 
     return result
   }
