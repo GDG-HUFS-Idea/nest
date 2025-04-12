@@ -44,7 +44,7 @@ export class CallbackOauthUsecase implements CallbackOauthUsecasePort {
       const sessionId = generateNanoId()
       const termIds = await this.getSignupTermIds()
 
-      await this.setNewOauthUserCache(generateNanoId(), oauthUser)
+      await this.setNewOauthUserCache(sessionId, oauthUser)
       await this.deleteOldOauthUserCache(dto)
 
       return {
