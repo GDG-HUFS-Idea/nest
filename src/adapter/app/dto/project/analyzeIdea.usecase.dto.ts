@@ -5,14 +5,5 @@ export class AnalyzeIdeaUsecaseDto {
   problem!: string
 
   @IsString()
-  motivation!: string
-
-  @IsString()
-  features!: string
-
-  @IsString()
-  method!: string
-
-  @IsString()
-  deliverable!: string
+  solution!: string
 }

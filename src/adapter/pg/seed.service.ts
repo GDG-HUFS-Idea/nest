@@ -10,7 +10,7 @@ import { ideaSeeds } from './seed/ideaSeeds'
 import { marketStatsSeeds } from './seed/marketStatsSeeds'
 import { sql } from 'drizzle-orm'
 import { RdbClient } from 'src/shared/type/rdbClient.type'
-import { analysisOverviewSeeds } from './seed/analysisSeeds'
+import { analysisOverviewSeeds } from './seed/analysisOverviewSeeds'
 import { marketTrendSeeds } from './seed/marketTrendSeeds'
 import { avgRevenueSeeds } from './seed/avgRevenueSeeds'
 

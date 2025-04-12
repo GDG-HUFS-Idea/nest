@@ -1,394 +1,230 @@
-import { Type } from 'class-transformer'
-import {
-  IsArray,
-  IsBoolean,
-  IsNumber,
-  IsObject,
-  IsOptional,
-  IsPositive,
-  IsString,
-  IsUrl,
-  Max,
-  Min,
-  ValidateNested,
-} from 'class-validator'
-import { Currency, Region } from 'src/shared/enum/enum'
+import { Currency } from 'src/shared/enum/enum'
+import { z } from 'zod'
 
-class MarketTrendItem {
-  @IsNumber()
-  year!: number
+const parsePercentage = (value: string): number => parseFloat(value.replace('%', '')) / 100
+const parseMoney = (value: string) => {
+  let currency: Currency
+  if (value.startsWith('$')) currency = Currency.USD
+  else if (value.startsWith('₩')) currency = Currency.KRW
 
-  @IsString()
-  volume!: string
-
-  @IsString()
-  currency!: Currency
-
-  @IsNumber()
-  growth_rate!: number
-
-  @IsUrl()
-  source!: string
+  const volume = parseFloat(value.replace(/[$₩,]/g, ''))
+  return { volume, currency: currency! }
+}
+const parseMarketSize = (
+  value: ({ year: number; size: { volume: number; currency: Currency }; growthRate: number } | { source: string })[],
+): {
+  items: { year: number; size: { volume: number; currency: Currency }; growthRate: number }[]
+  source: { source: string }
+} => {
+  if (Array.isArray(value)) {
+    const items = value.slice(0, -1) as {
+      year: number
+      size: { volume: number; currency: Currency }
+      growthRate: number
+    }[]
+    const source = value[value.length - 1] as { source: string }
+    return { items, source }
+  }
+  return { items: [], source: { source: '' } }
 }
 
-class RevenueSummary {
-  @IsNumber()
-  amount!: number
+const parsePeriod = (value: string) => {
+  const originalPeriod = value
+  const untilPattern = /(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일까지/
+  const fromToPattern = /(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일부터\s*(\d{1,2})월\s*(\d{1,2})일까지/
+  const fromToYearPattern = /(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일부터\s*(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일까지/
+  const tildePattern = /(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일\s*~\s*(\d{1,2})월\s*(\d{1,2})일/
+  const tildeYearPattern = /(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일\s*~\s*(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/
 
-  @IsString()
-  currency!: Currency
+  let startDate: Date | null = null
+  let endDate: Date | null = null
 
-  @IsUrl()
-  source!: string
+  const untilMatch = originalPeriod.match(untilPattern)
+  if (untilMatch) {
+    const [_, year, month, day] = untilMatch
+    endDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+  }
+
+  const fromToMatch = originalPeriod.match(fromToPattern)
+  if (fromToMatch) {
+    const [_, year, monthFrom, dayFrom, monthTo, dayTo] = fromToMatch
+    startDate = new Date(parseInt(year), parseInt(monthFrom) - 1, parseInt(dayFrom))
+    endDate = new Date(parseInt(year), parseInt(monthTo) - 1, parseInt(dayTo))
+  }
+
+  const fromToYearMatch = originalPeriod.match(fromToYearPattern)
+  if (fromToYearMatch) {
+    const [_, yearFrom, monthFrom, dayFrom, yearTo, monthTo, dayTo] = fromToYearMatch
+    startDate = new Date(parseInt(yearFrom), parseInt(monthFrom) - 1, parseInt(dayFrom))
+    endDate = new Date(parseInt(yearTo), parseInt(monthTo) - 1, parseInt(dayTo))
+  }
+
+  const tildeMatch = originalPeriod.match(tildePattern)
+  if (tildeMatch) {
+    const [_, year, monthFrom, dayFrom, monthTo, dayTo] = tildeMatch
+    startDate = new Date(parseInt(year), parseInt(monthFrom) - 1, parseInt(dayFrom))
+    endDate = new Date(parseInt(year), parseInt(monthTo) - 1, parseInt(dayTo))
+  }
+
+  const tildeYearMatch = originalPeriod.match(tildeYearPattern)
+  if (tildeYearMatch) {
+    const [_, yearFrom, monthFrom, dayFrom, yearTo, monthTo, dayTo] = tildeYearMatch
+    startDate = new Date(parseInt(yearFrom), parseInt(monthFrom) - 1, parseInt(dayFrom))
+    endDate = new Date(parseInt(yearTo), parseInt(monthTo) - 1, parseInt(dayTo))
+  }
+
+  return { originalPeriod, startDate, endDate }
 }
 
-class SimilarServiceItem {
-  @IsString()
-  description!: string
-
-  @IsUrl()
-  logo_url!: string
-
-  @IsUrl()
-  website_url!: string
-
-  @IsArray()
-  @IsString({ each: true })
-  tags!: string[]
-
-  @IsString()
-  summary!: string
-}
-
-class SupportProgram {
-  @IsString()
-  name!: string
-
-  @IsString()
-  organizer!: string
-
-  @IsUrl()
-  url!: string
-
-  @IsString()
-  start_date!: string
-
-  @IsString()
-  end_date!: string
-}
-
-class LabelDescription {
-  @IsString()
-  label!: string
-
-  @IsString()
-  description!: string
-}
-
-class MarketingStrategyDetail {
-  @IsString()
-  label!: string
-
-  @IsString()
-  description!: string
-}
-
-class OpportunityItem {
-  @IsString()
-  title!: string
-
-  @IsString()
-  description!: string
-}
-
-class LimitationItem {
-  @IsString()
-  category!: string
-
-  @IsString()
-  detail!: string
-
-  @IsString()
-  impact!: string
-
-  @IsString()
-  solution!: string
-}
-
-class TeamRequirement {
-  @IsNumber()
-  @IsPositive()
-  order!: number
-
-  @IsString()
-  role!: string
-
-  @IsArray()
-  @IsString({ each: true })
-  skills!: string[]
-
-  @IsArray()
-  @IsString({ each: true })
-  tasks!: string[]
-
-  @IsNumber()
-  salary_min!: number
-
-  @IsNumber()
-  salary_max!: number
-
-  @IsString()
-  currency!: Currency
-}
-
-class MarketTrends {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MarketTrendItem)
-  [Region.DOMESTIC]!: MarketTrendItem[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MarketTrendItem)
-  [Region.GLOBAL]!: MarketTrendItem[]
-}
-
-class AvgRevenue {
-  @IsObject()
-  @ValidateNested()
-  @Type(() => RevenueSummary)
-  [Region.DOMESTIC]!: RevenueSummary;
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => RevenueSummary)
-  [Region.GLOBAL]!: RevenueSummary
-}
-
-class SimilarService {
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  score!: number
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SimilarServiceItem)
-  items!: SimilarServiceItem[]
-}
-
-class ValueProp {
-  @IsString()
-  content!: string
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => LabelDescription)
-  details!: LabelDescription[]
-}
-
-class Revenue {
-  @IsString()
-  label!: string
-
-  @IsString()
-  description!: string
-
-  @IsArray()
-  @IsString({ each: true })
-  details!: string[]
-}
-
-class Investment {
-  @IsNumber()
-  @IsPositive()
-  order!: number
-
-  @IsString()
-  section!: string
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => LabelDescription)
-  details!: LabelDescription[]
-}
-
-class MarketingStrategy {
-  @IsString()
-  title!: string
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MarketingStrategyDetail)
-  details!: MarketingStrategyDetail[]
-}
-
-class Opportunity {
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  score!: number
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => OpportunityItem)
-  items!: OpportunityItem[]
-}
-
-class Limitation {
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  score!: number
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => LimitationItem)
-  items!: LimitationItem[]
-}
-
-class MarketStats {
-  @IsString()
-  industry_path!: string
-
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  score!: number
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => MarketTrends)
-  market_trends!: MarketTrends
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => AvgRevenue)
-  avg_revenue!: AvgRevenue
-}
-
-class TargetMarket {
-  @IsString()
-  target!: string
-
-  @IsUrl()
-  icon_url!: string
-
-  @IsNumber()
-  @IsPositive()
-  order!: number
-
-  @IsArray()
-  @IsString({ each: true })
-  reasons!: string[]
-
-  @IsArray()
-  @IsString({ each: true })
-  appeal!: string[]
-
-  @IsArray()
-  @IsString({ each: true })
-  online_activity!: string[]
-
-  @IsArray()
-  @IsString({ each: true })
-  online_channels!: string[]
-
-  @IsArray()
-  @IsString({ each: true })
-  offline_channels!: string[]
-}
-
-class BusinessModel {
-  @IsString()
-  summary!: string
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => ValueProp)
-  value_prop!: ValueProp
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Revenue)
-  revenue!: Revenue[]
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => Investment)
-  investments!: Investment[]
-}
-
-class Result {
-  @IsString()
-  summary!: string
-
-  @IsString()
-  review!: string
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => SimilarService)
-  similar_service!: SimilarService
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SupportProgram)
-  support_programs!: SupportProgram[]
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => MarketStats)
-  market_stats!: MarketStats
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => TargetMarket)
-  target_markets!: TargetMarket[]
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MarketingStrategy)
-  marketing_strategies!: MarketingStrategy[]
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => BusinessModel)
-  business_model!: BusinessModel
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => Opportunity)
-  opportunity!: Opportunity
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => Limitation)
-  limitation!: Limitation
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => TeamRequirement)
-  team_requirements!: TeamRequirement[]
-}
-
-export class WatchAnalysisStatusDto {
-  @IsBoolean()
-  is_complete!: boolean
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => Result)
-  @IsOptional()
-  result?: Result
-
-  @IsNumber()
-  @Min(0)
-  @Max(1)
-  @IsOptional()
-  progress?: number
-
-  @IsString()
-  @IsOptional()
-  message?: string
-}
+export const WatchAnalysisStatusSchema = z.object({
+  is_complete: z.boolean(),
+  progress: z.number().min(0).max(1),
+  message: z.string().min(1),
+  result: z
+    .object({
+      ksicCode: z.string().min(1),
+      ksicCategory: z.string().min(1),
+      ksicHierarchy: z.object({
+        large: z.object({ code: z.string().min(1), name: z.string().min(1) }),
+        medium: z.object({ code: z.string().min(1), name: z.string().min(1) }),
+        small: z.object({ code: z.string().min(1), name: z.string().min(1) }),
+        detail: z.object({ code: z.string().min(1), name: z.string().min(1) }),
+      }),
+      marketSizeByYear: z.object({
+        domestic: z
+          .array(
+            z.union([
+              z.object({
+                year: z.number(),
+                size: z
+                  .string()
+                  .regex(/^\$\d+(,\d{3})*(\.\d+)?$/)
+                  .transform(parseMoney),
+                growthRate: z
+                  .string()
+                  .regex(/^-?\d+(\.\d+)?%$/)
+                  .transform(parsePercentage),
+              }),
+              z.object({
+                source: z.string().min(1),
+              }),
+            ]),
+          )
+          .transform(parseMarketSize),
+        global: z
+          .array(
+            z.union([
+              z.object({
+                year: z.number(),
+                size: z
+                  .string()
+                  .regex(/^\$\d+(,\d{3})*(\.\d+)?$/)
+                  .transform(parseMoney),
+                growthRate: z
+                  .string()
+                  .regex(/^-?\d+(\.\d+)?%$/)
+                  .transform(parsePercentage),
+              }),
+              z.object({
+                source: z.string().min(1),
+              }),
+            ]),
+          )
+          .transform(parseMarketSize),
+      }),
+      averageRevenue: z.object({
+        domestic: z
+          .string()
+          .regex(/^\$\d+(,\d{3})*(\.\d+)?$/)
+          .transform(parseMoney),
+        global: z
+          .string()
+          .regex(/^\$\d+(,\d{3})*(\.\d+)?$/)
+          .transform(parseMoney),
+        source: z.string().min(1),
+      }),
+      similarServices: z.array(z.any()).optional(),
+      targetAudience: z
+        .array(
+          z.object({
+            segment: z.string().min(1),
+            reasons: z.string().min(1),
+            interestFactors: z.string().min(1),
+            onlineActivities: z.string().min(1),
+            onlineTouchpoints: z.string().min(1),
+            offlineTouchpoints: z.string().min(1),
+          }),
+        )
+        .min(1),
+      businessModel: z.object({
+        tagline: z.string().min(5).max(100),
+        value: z.string().min(1),
+        valueDetails: z.string().min(1),
+        revenueStructure: z.string().min(1),
+        investmentPriorities: z
+          .array(
+            z.object({
+              name: z.string().min(1),
+              description: z.string().min(1),
+            }),
+          )
+          .min(1),
+        breakEvenPoint: z.string().min(1),
+      }),
+      marketingStrategy: z.object({
+        approach: z.string().min(1),
+        channels: z.array(z.string()).min(1),
+        messages: z.array(z.string()).min(1),
+        budgetAllocation: z.string().min(1),
+        kpis: z.array(z.string()).min(1),
+        phasedStrategy: z.object({
+          preLaunch: z.string().min(1),
+          launch: z.string().min(1),
+          growth: z.string().min(1),
+        }),
+      }),
+      opportunities: z.array(z.string()).min(1),
+      supportPrograms: z.array(
+        z.object({
+          name: z.string().min(1),
+          organization: z.string().min(1),
+          // amount: z
+          //   .string()
+          //   .regex(/^\$\d+(,\d{3})*(\.\d+)?$/)
+          //   .transform(parseMoney),
+          period: z.string().min(1).transform(parsePeriod),
+        }),
+      ),
+      limitations: z.array(
+        z.object({
+          category: z.string().min(1),
+          details: z.string().min(1),
+          impact: z.string().min(1),
+          solution: z.string().min(1),
+        }),
+      ),
+      requiredTeam: z.object({
+        roles: z
+          .array(
+            z.object({
+              title: z.string().min(1),
+              skills: z.string().min(1),
+              responsibilities: z.string().min(1),
+              priority: z.coerce.number().int().positive().min(1),
+            }),
+          )
+          .min(1),
+      }),
+      scores: z.object({
+        market: z.number().min(0).max(100),
+        opportunity: z.number().min(0).max(100),
+        similarService: z.number().min(0).max(100),
+        risk: z.number().min(0).max(100),
+        total: z.number().min(0).max(100),
+      }),
+      oneLineReview: z.string().min(1),
+    })
+    .optional(),
+})
+
+export type WatchAnalysisStatusDto = z.infer<typeof WatchAnalysisStatusSchema>

@@ -1,15 +1,10 @@
 import { Observable } from 'rxjs'
 import { WatchAnalysisStatusUsecaseDto } from 'src/adapter/app/dto/project/watchAnalysisStatus.usecase.dto'
 
-export const WATCH_ANALYSIS_STATUS_USECASE = Symbol(
-  'WATCH_ANALYSIS_STATUS_USECASE',
-)
+export const WATCH_ANALYSIS_STATUS_USECASE = Symbol('WATCH_ANALYSIS_STATUS_USECASE')
 
 export interface WatchAnalysisStatusUsecasePort {
-  exec(
-    dto: WatchAnalysisStatusUsecaseDto,
-    user: User,
-  ): Observable<WatchAnalysisStatusUsecaseRes>
+  exec(dto: WatchAnalysisStatusUsecaseDto, user: User): Promise<Observable<Promise<WatchAnalysisStatusUsecaseRes>>>
 }
 
 export type WatchAnalysisStatusUsecaseRes =

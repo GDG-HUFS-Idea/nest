@@ -15,8 +15,8 @@ import { RedisModule } from '../redis/redis.module'
 import { CALLBACK_OAUTH_USECASE } from 'src/port/in/auth/getOauthResult.usecase.port'
 import { CallbackOauthUsecase } from 'src/usecase/auth/callbackOauth.usecase'
 import { JwtService } from './auth/jwt/jwt.service'
-import { OAUTH_SIGN_UP_USECASE } from 'src/port/in/auth/oauthSignUp.usecase.port'
-import { OauthSignUpUsecase } from 'src/usecase/auth/oauthSignUp.usecase'
+import { OAUTH_SIGNUP_USECASE } from 'src/port/in/auth/oauthSignup.usecase.port'
+import { OauthSignupUsecase } from 'src/usecase/auth/oauthSignup.usecase'
 import { GET_TERMS_USECASE } from 'src/port/in/term/getTerms.usecase.port'
 import { GetTermsUsecase } from 'src/usecase/term/getTerms.usecase'
 import { APP_FILTER } from '@nestjs/core'
@@ -66,18 +66,12 @@ import { AiModule } from '../ai/ai.module'
 
     { provide: CACHE_OAUTH_USECASE, useClass: CacheOauthUsecase },
     { provide: CALLBACK_OAUTH_USECASE, useClass: CallbackOauthUsecase },
-    { provide: OAUTH_SIGN_UP_USECASE, useClass: OauthSignUpUsecase },
+    { provide: OAUTH_SIGNUP_USECASE, useClass: OauthSignupUsecase },
     { provide: GET_TERMS_USECASE, useClass: GetTermsUsecase },
-    {
-      provide: GET_ANALYSIS_OVERVIEW_USECASE,
-      useClass: GetAnalysisOverviewUsecase,
-    },
+    { provide: GET_ANALYSIS_OVERVIEW_USECASE, useClass: GetAnalysisOverviewUsecase },
     { provide: GET_MY_PROJECT_LIST_USECASE, useClass: GetMyProjectListUsecase },
     { provide: ANALYZE_IDEA_USECASE, useClass: AnalyzeIdeaUsecase },
-    {
-      provide: WATCH_ANALYSIS_STATUS_USECASE,
-      useClass: WatchAnalysisStatusUsecase,
-    },
+    { provide: WATCH_ANALYSIS_STATUS_USECASE, useClass: WatchAnalysisStatusUsecase },
   ],
 })
 export class AppModule {}

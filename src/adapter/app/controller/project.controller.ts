@@ -1,13 +1,5 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Inject,
-  Post,
-  Query,
-  Sse,
-  UseGuards,
-} from '@nestjs/common'
+import { Body, Controller, Get, Inject, Post, Query, Sse, UseGuards } from '@nestjs/common'
+import { filter, map, mergeMap, takeWhile } from 'rxjs'
 import {
   GET_ANALYSIS_OVERVIEW_USECASE,
   GetAnalysisOverviewUsecasePort,
@@ -21,10 +13,7 @@ import { User } from '../paramDecorator/user.decorator'
 import { JwtGuard } from '../auth/jwt/jwt.guard'
 import { GetMyProjectListUsecaseDto } from '../dto/project/getMyProjectList.usecase.dto'
 import { AnalyzeIdeaUsecaseDto } from '../dto/project/analyzeIdea.usecase.dto'
-import {
-  AnalyzeIdeaUsecasePort,
-  ANALYZE_IDEA_USECASE,
-} from 'src/port/in/project/analyzeIdea.usecase.port'
+import { AnalyzeIdeaUsecasePort, ANALYZE_IDEA_USECASE } from 'src/port/in/project/analyzeIdea.usecase.port'
 import {
   WATCH_ANALYSIS_STATUS_USECASE,
   WatchAnalysisStatusUsecasePort,
@@ -46,10 +35,7 @@ export class ProjectController {
 
   @Get('/analyses/overview')
   @UseGuards(JwtGuard)
-  async getAnalysisOverview(
-    @Query() dto: GetAnalysisOverviewUsecaseDto,
-    @User() user: User,
-  ) {
+  async getAnalysisOverview(@Query() dto: GetAnalysisOverviewUsecaseDto, @User() user: User) {
     return this.getAnalysisOverviewUsecase.exec(dto, user)
   }
 
@@ -61,19 +47,18 @@ export class ProjectController {
 
   @Sse('/analyses/overview/status')
   @UseGuards(JwtGuard)
-  watchAnalysisStatus(
-    @Query() dto: WatchAnalysisStatusUsecaseDto,
-    @User() user: User,
-  ) {
-    return this.watchAnalysisStatusUsecase.exec(dto, user)
+  async watchAnalysisStatus(@Query() dto: WatchAnalysisStatusUsecaseDto, @User() user: User) {
+    return (await this.watchAnalysisStatusUsecase.exec(dto, user)).pipe(
+      mergeMap((promise) => promise),
+      filter((result) => !!result),
+      map((result) => ({ data: result })),
+      takeWhile((result) => result.data.is_complete !== true, true),
+    )
   }
 
   @Get('/my')
   @UseGuards(JwtGuard)
-  async getMyProjectList(
-    @Query() dto: GetMyProjectListUsecaseDto,
-    @User() user: User,
-  ) {
+  async getMyProjectList(@Query() dto: GetMyProjectListUsecaseDto, @User() user: User) {
     return this.getMyProjectListUsecase.exec(dto, user)
   }
 }

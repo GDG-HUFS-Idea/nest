@@ -4,10 +4,7 @@ export class Idea {
   id?: number
   projectId!: number
   problem!: string
-  motivation!: string
-  features!: string
-  method!: string
-  deliverable!: string
+  solution!: string
   createdAt!: Date
   updatedAt!: Date
   deletedAt?: Date
@@ -18,10 +15,7 @@ export class Idea {
   constructor(param: {
     projectId: number
     problem: string
-    motivation: string
-    features: string
-    method: string
-    deliverable: string
+    solution: string
     id?: number
     createdAt?: Date
     updatedAt?: Date
@@ -30,10 +24,7 @@ export class Idea {
   }) {
     this.projectId = param.projectId
     this.problem = param.problem
-    this.motivation = param.motivation
-    this.features = param.features
-    this.method = param.method
-    this.deliverable = param.deliverable
+    this.solution = param.solution
     this.id = param.id
     this.createdAt = param.createdAt ?? new Date()
     this.updatedAt = param.updatedAt ?? new Date()

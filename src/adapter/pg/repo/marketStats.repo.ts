@@ -3,7 +3,7 @@ import { MarketStatsRepoPort } from 'src/port/out/repo/marketStats.repo.port'
 import { PgService } from '../pg.service'
 import * as schema from '../drizzle/schema'
 import { RdbClient } from 'src/shared/type/rdbClient.type'
-import { and, eq, isNull, gt, gte, between } from 'drizzle-orm'
+import { and, eq, isNull, between, sql, inArray, or, InferSelectModel } from 'drizzle-orm'
 import { MarketStats } from 'src/domain/marketStats'
 import { mapMarketStats } from '../mapper/mapMarketStats'
 import { Region } from 'src/shared/enum/enum'
@@ -21,10 +21,7 @@ export class MarketStatsRepo implements MarketStatsRepoPort {
     const ctx = param.ctx ?? this.pgService.getClient()
 
     const result = await ctx.query.marketStats.findFirst({
-      where: and(
-        eq(schema.marketStats.industryPath, param.industryPath),
-        isNull(schema.marketStats.deletedAt),
-      ),
+      where: and(eq(schema.marketStats.industryPath, param.industryPath), isNull(schema.marketStats.deletedAt)),
       with: {
         marketTrends: {
           where: and(
@@ -38,143 +35,92 @@ export class MarketStatsRepo implements MarketStatsRepoPort {
       },
     })
 
-    if (!result) return null
+    if (!result || result.marketTrends.length !== 2 * (param.toYear - param.fromYear + 1)) return null
 
     return mapMarketStats(result, result.marketTrends, result.avgRevenues)
   }
 
-  async saveOne(param: {
-    marketStats: MarketStats
-    ctx?: RdbClient
-  }): Promise<MarketStats> {
+  async saveOne(param: { marketStats: MarketStats; ctx?: RdbClient }): Promise<MarketStats> {
     const ctx = param.ctx ?? this.pgService.getClient()
-    const marketStats = param.marketStats
-    let savedMarketStats
 
-    try {
-      if (marketStats.id) {
-        const [updatedStats] = await ctx
-          .update(schema.marketStats)
-          .set({
-            score: marketStats.score,
-            updatedAt: new Date(),
-          })
-          .where(
-            and(
-              eq(schema.marketStats.id, marketStats.id),
-              isNull(schema.marketStats.deletedAt),
+    return await ctx.transaction(async (trxCtx) => {
+      // market stats
+      await trxCtx
+        .update(schema.marketStats)
+        .set({ deletedAt: new Date() })
+        .where(
+          and(
+            eq(schema.marketStats.industryPath, param.marketStats.industryPath),
+            isNull(schema.marketStats.deletedAt),
+          ),
+        )
+
+      const savedMarketStats = (await trxCtx.insert(schema.marketStats).values(param.marketStats).returning())[0]
+
+      // market trends
+      await trxCtx
+        .update(schema.marketTrends)
+        .set({ deletedAt: new Date() })
+        .where(
+          and(
+            eq(schema.marketTrends.marketStatsId, savedMarketStats.id),
+            isNull(schema.marketTrends.deletedAt),
+            or(
+              and(
+                eq(schema.marketTrends.region, Region.DOMESTIC),
+                inArray(schema.marketTrends.year, [
+                  ...(param.marketStats?.domesticMarketTrends.map((marketTrend) => marketTrend.year) || []),
+                ]),
+              ),
+              and(
+                eq(schema.marketTrends.region, Region.GLOBAL),
+                inArray(schema.marketTrends.year, [
+                  ...(param.marketStats?.globalMarketTrends.map((marketTrend) => marketTrend.year) || []),
+                ]),
+              ),
             ),
-          )
-          .returning()
+          ),
+        )
 
-        if (!updatedStats) {
-          throw new Error('Market stats update failed')
-        }
-
-        savedMarketStats = updatedStats
-
-        await ctx
-          .update(schema.marketTrends)
-          .set({ deletedAt: new Date() })
-          .where(eq(schema.marketTrends.marketStatsId, savedMarketStats.id))
-          .execute()
-
-        await ctx
-          .update(schema.avgRevenues)
-          .set({ deletedAt: new Date() })
-          .where(eq(schema.avgRevenues.marketStatsId, savedMarketStats.id))
-          .execute()
-      } else {
-        const [newStats] = await ctx
-          .insert(schema.marketStats)
-          .values({
-            industryPath: marketStats.industryPath,
-            score: marketStats.score,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .returning()
-
-        if (!newStats) {
-          throw new Error('Market stats insertion failed')
-        }
-
-        savedMarketStats = newStats
-      }
-
-      const domesticMarketTrends = await Promise.all(
-        marketStats.domesticMarketTrends.map(async (trend) => {
-          const [savedTrend] = await ctx
-            .insert(schema.marketTrends)
-            .values({
-              marketStatsId: savedMarketStats.id,
-              region: Region.DOMESTIC,
-              year: trend.year,
-              volume: trend.volume,
-              currency: trend.currency,
-              growthRate: trend.growthRate,
-              source: trend.source,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            })
-            .returning()
-          return savedTrend
-        }),
-      )
-
-      const globalMarketTrends = await Promise.all(
-        marketStats.globalMarketTrends.map(async (trend) => {
-          const [savedTrend] = await ctx
-            .insert(schema.marketTrends)
-            .values({
-              marketStatsId: savedMarketStats.id,
-              region: Region.GLOBAL,
-              year: trend.year,
-              volume: trend.volume,
-              currency: trend.currency,
-              growthRate: trend.growthRate,
-              source: trend.source,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            })
-            .returning()
-          return savedTrend
-        }),
-      )
-
-      const [domesticAvgRevenue] = await ctx
-        .insert(schema.avgRevenues)
-        .values({
-          marketStatsId: savedMarketStats.id,
-          region: Region.DOMESTIC,
-          amount: marketStats.domesticAvgRevenue.amount,
-          currency: marketStats.domesticAvgRevenue.currency,
-          source: marketStats.domesticAvgRevenue.source,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
+      const savedMarketTrends = await trxCtx
+        .insert(schema.marketTrends)
+        .values([
+          ...param.marketStats.domesticMarketTrends.map((marketTrend) => ({
+            marketStatsId: savedMarketStats.id,
+            region: Region.DOMESTIC,
+            ...marketTrend,
+          })),
+          ...param.marketStats.globalMarketTrends.map((marketTrend) => ({
+            marketStatsId: savedMarketStats.id,
+            region: Region.GLOBAL,
+            ...marketTrend,
+          })),
+        ])
         .returning()
 
-      const [globalAvgRevenue] = await ctx
+      // avg revenue
+      await trxCtx
+        .update(schema.avgRevenues)
+        .set({ deletedAt: new Date() })
+        .where(and(eq(schema.avgRevenues.marketStatsId, savedMarketStats.id), isNull(schema.avgRevenues.deletedAt)))
+
+      const savedAvgRevenues = await trxCtx
         .insert(schema.avgRevenues)
-        .values({
-          marketStatsId: savedMarketStats.id,
-          region: Region.GLOBAL,
-          amount: marketStats.globalAvgRevenue.amount,
-          currency: marketStats.globalAvgRevenue.currency,
-          source: marketStats.globalAvgRevenue.source,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
+        .values([
+          {
+            marketStatsId: savedMarketStats.id,
+            region: Region.GLOBAL,
+            ...param.marketStats.domesticAvgRevenue,
+          },
+          {
+            marketStatsId: savedMarketStats.id,
+            region: Region.GLOBAL,
+            ...param.marketStats.globalAvgRevenue,
+          },
+        ])
         .returning()
 
-      return mapMarketStats(
-        savedMarketStats,
-        [...domesticMarketTrends, ...globalMarketTrends],
-        [domesticAvgRevenue, globalAvgRevenue],
-      )
-    } catch (error) {
-      throw error
-    }
+      return mapMarketStats(savedMarketStats, savedMarketTrends!, savedAvgRevenues!)
+    })
   }
 }
