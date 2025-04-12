@@ -10,25 +10,12 @@ import { RdbClient } from 'src/shared/type/rdbClient.type'
 export class UserAgreementRepo implements UserAgreementRepoPort {
   constructor(private readonly pgService: PgService) {}
 
-  findManyByUserId(param: {
-    userId: number
-    ctx?: RdbClient
-  }): Promise<UserAgreement[] | null> {
-    throw new Error('Method not implemented.')
-  }
-
-  async saveMany(param: {
-    userAgreements: UserAgreement[]
-    ctx?: RdbClient
-  }): Promise<UserAgreement[] | null> {
-    if (param.userAgreements.length === 0) return null
+  async saveMany(param: { userAgreements: UserAgreement[]; ctx?: RdbClient }): Promise<UserAgreement[]> {
+    if (param.userAgreements.length === 0) return []
 
     const ctx = param.ctx ?? this.pgService.getClient()
 
-    const rows = await ctx
-      .insert(schema.userAgreements)
-      .values(param.userAgreements)
-      .returning()
+    const rows = await ctx.insert(schema.userAgreements).values(param.userAgreements).returning()
 
     return rows.map(mapUserAgreement)
   }

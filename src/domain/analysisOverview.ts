@@ -1,84 +1,92 @@
 import { Project } from './project'
 
-type SimilarService = {
+type SimilarServices = {
   description: string
   logoUrl: string
   websiteUrl: string
   tags: string[]
   summary: string
-}
+}[]
 
-type SupportProgram = {
+type SupportPrograms = {
   name: string
   organizer: string
-  url: string
-  startDate: Date
-  endDate: Date
-}
+  // url: string
+  startDate?: Date
+  endDate?: Date
+}[]
 
-type TargetMarket = {
+type TargetMarkets = {
   target: string
-  iconUrl: string
+  // iconUrl: string
   order: number
-  reasons: string[]
-  appeal: string[]
-  onlineActivity: string[]
-  onlineChannels: string[]
-  offlineChannels: string[]
-}
+  reason: string // string[]
+  appeal: string // string[]
+  onlineActivity: string // string[]
+  onlineChannels: string // string[]
+  offlineChannels: string // string[]
+}[]
 
-type MarketingStrategy = {
-  title: string
-  details: {
-    label: string
-    description: string
-  }[]
-}
-
-type BusinessModelDetail = {
-  label: string
-  description: string
-}
+// type MarketingStrategy = {
+//   title: string
+//   details: {
+//     label: string
+//     description: string
+//   }[]
+// }
 
 type BusinessModel = {
   summary: string
-  valueProp: {
-    content: string
-    details: BusinessModelDetail[]
-  }
-  revenue: {
-    label: string
-    description: string
-    details: string[]
-  }[]
+  valueProp: string
+  revenue: string
   investments: {
     order: number
     section: string
-    details: BusinessModelDetail[]
+    description: string
   }[]
 }
 
-type Opportunity = {
-  title: string
-  description: string
-}
+// type BusinessModelDetail = {
+//   label: string
+//   description: string
+// }
+// type BusinessModel = {
+//   summary: string
+//   valueProp: {
+//     content: string
+//     details: BusinessModelDetail[]
+//   }
+//   revenue: {
+//     label: string
+//     description: string
+//     details: string[]
+//   }[]
+//   investments: {
+//     order: number
+//     section: string
+//     details: BusinessModelDetail[]
+//   }[]
+// }
 
-type Limitation = {
+type Opportunities = string[]
+// type Opportunity = {
+//   title: string
+//   description: string
+// }
+
+type Limitations = {
   category: string
   detail: string
   impact: string
   solution: string
-}
+}[]
 
-type TeamRequirement = {
+type TeamRequirements = {
   order: number
-  role: string
-  skills: string[]
-  tasks: string[]
-  salaryMin: number
-  salaryMax: number
-  currency: string
-}
+  title: string
+  skill: string
+  responsibility: string
+}[]
 
 export class AnalysisOverview {
   id?: number
@@ -89,14 +97,14 @@ export class AnalysisOverview {
   similarServicesScore!: number
   limitationsScore!: number
   opportunitiesScore!: number
-  similarServices!: SimilarService[]
-  supportPrograms!: SupportProgram[]
-  targetMarkets!: TargetMarket[]
-  marketingStrategies!: MarketingStrategy[]
+  similarServices!: SimilarServices
+  supportPrograms!: SupportPrograms
+  targetMarkets!: TargetMarkets
+  // marketingStrategies!: MarketingStrategy
   businessModel!: BusinessModel
-  opportunities!: Opportunity[]
-  limitations!: Limitation[]
-  teamRequirements!: TeamRequirement[]
+  opportunities!: Opportunities
+  limitations!: Limitations
+  teamRequirements!: TeamRequirements
   createdAt!: Date
   updatedAt!: Date
   deletedAt?: Date
@@ -112,14 +120,14 @@ export class AnalysisOverview {
     similarServicesScore: number
     limitationsScore: number
     opportunitiesScore: number
-    similarServices: SimilarService[]
-    supportPrograms: SupportProgram[]
-    targetMarkets: TargetMarket[]
-    marketingStrategies: MarketingStrategy[]
+    similarServices: SimilarServices
+    supportPrograms: SupportPrograms
+    targetMarkets: TargetMarkets
+    // marketingStrategies: MarketingStrategy
     businessModel: BusinessModel
-    opportunities: Opportunity[]
-    limitations: Limitation[]
-    teamRequirements: TeamRequirement[]
+    opportunities: Opportunities
+    limitations: Limitations
+    teamRequirements: TeamRequirements
     id?: number
     createdAt?: Date
     updatedAt?: Date
@@ -136,7 +144,7 @@ export class AnalysisOverview {
     this.similarServices = param.similarServices
     this.supportPrograms = param.supportPrograms
     this.targetMarkets = param.targetMarkets
-    this.marketingStrategies = param.marketingStrategies
+    // this.marketingStrategies = param.marketingStrategies
     this.businessModel = param.businessModel
     this.opportunities = param.opportunities
     this.limitations = param.limitations

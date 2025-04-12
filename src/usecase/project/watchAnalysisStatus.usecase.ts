@@ -1,213 +1,227 @@
-import {
-  BadGatewayException,
-  BadRequestException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common'
+import { BadGatewayException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { WatchAnalysisStatusUsecaseDto } from 'src/adapter/app/dto/project/watchAnalysisStatus.usecase.dto'
 import {
   WatchAnalysisStatusUsecasePort,
   WatchAnalysisStatusUsecaseRes,
 } from 'src/port/in/project/watchAnalysisStatus.usecase.port'
 import { AI_SERVICE, AiServicePort } from 'src/port/out/service/ai.service.port'
-import { Observable, catchError, throwError, switchMap, from } from 'rxjs'
-import {
-  PROJECT_REPO,
-  ProjectRepoPort,
-} from 'src/port/out/repo/project.repo.port'
-import {
-  ANALYSIS_OVERVIEW_REPO,
-  AnalysisOverviewRepoPort,
-} from 'src/port/out/repo/analysisOverview.repo.port'
-import {
-  MARKET_STATS_REPO,
-  MarketStatsRepoPort,
-} from 'src/port/out/repo/marketStats.repo.port'
+import { Observable, map, of } from 'rxjs'
+import { PROJECT_REPO, ProjectRepoPort } from 'src/port/out/repo/project.repo.port'
+import { ANALYSIS_OVERVIEW_REPO, AnalysisOverviewRepoPort } from 'src/port/out/repo/analysisOverview.repo.port'
+import { MARKET_STATS_REPO, MarketStatsRepoPort } from 'src/port/out/repo/marketStats.repo.port'
+import { TRX_SERVICE, TrxServicePort } from 'src/port/out/service/trx.service.port'
+import { CACHE_REPO, CacheRepoPort } from 'src/port/out/repo/cache.repo.port'
 import { Project } from 'src/domain/project'
 import { AnalysisOverview } from 'src/domain/analysisOverview'
 import { MarketStats } from 'src/domain/marketStats'
-import { Currency } from 'src/shared/enum/enum'
-import {
-  TRX_SERVICE,
-  TrxServicePort,
-} from 'src/port/out/service/trx.service.port'
+import { WatchAnalysisStatusDto } from 'src/adapter/ai/dto/watchAnalysisStatus.dto'
 
 @Injectable()
-export class WatchAnalysisStatusUsecase
-  implements WatchAnalysisStatusUsecasePort
-{
+export class WatchAnalysisStatusUsecase implements WatchAnalysisStatusUsecasePort {
   constructor(
     @Inject(AI_SERVICE) private readonly aiService: AiServicePort,
     @Inject(PROJECT_REPO) private readonly projectRepo: ProjectRepoPort,
-    @Inject(ANALYSIS_OVERVIEW_REPO)
-    private readonly analysisOverviewRepo: AnalysisOverviewRepoPort,
-    @Inject(MARKET_STATS_REPO)
-    private readonly marketStatsRepo: MarketStatsRepoPort,
+    @Inject(ANALYSIS_OVERVIEW_REPO) private readonly analysisOverviewRepo: AnalysisOverviewRepoPort,
+    @Inject(MARKET_STATS_REPO) private readonly marketStatsRepo: MarketStatsRepoPort,
     @Inject(TRX_SERVICE) private readonly trxService: TrxServicePort,
+    @Inject(CACHE_REPO) private readonly cacheRepo: CacheRepoPort,
   ) {}
 
-  // 분석 상태 스트림 생성 및 상태 이벤트 처리
-  exec(
+  async exec(
     dto: WatchAnalysisStatusUsecaseDto,
     user: User,
-  ): Observable<WatchAnalysisStatusUsecaseRes> {
-    return this.createStatusStream(dto.task_id, user)
-  }
+  ): Promise<Observable<Promise<WatchAnalysisStatusUsecaseRes>>> {
+    const task = await this.cacheRepo.getTask({ taskId: dto.task_id, userId: user.id })
 
-  // 분석 상태 스트림 생성
-  private createStatusStream(
-    taskId: string,
-    user: User,
-  ): Observable<WatchAnalysisStatusUsecaseRes> {
-    try {
-      return this.aiService.watchAnalysisStatus({ task_id: taskId }).pipe(
-        switchMap((event) => {
-          if (!event.is_success) {
-            throw { status: event.status, code: event.code }
-          }
-          return from(this.processStatusEvent(event.data, user))
+    // 해당 작업이 존재하지 않거나 만료된 경우
+    if (!task) {
+      throw new NotFoundException()
+    }
+
+    // 이미 완료된 작업이고 결과가 있는 경우
+    if (task.is_complete && task.result) {
+      return of(
+        Promise.resolve({
+          is_complete: true as const,
+          result: task.result,
         }),
-        catchError((err) => this.handleStreamError(err)),
       )
-    } catch {
-      throw new InternalServerErrorException()
     }
+
+    return this.aiService.watchAnalysisStatus({ task_id: dto.task_id }).pipe(
+      map(async (res) => {
+        if (!res.is_success) {
+          throw new BadGatewayException()
+        }
+
+        const data = res.data
+
+        // 분석이 아직 진행 중인 경우
+        if (!data.is_complete) {
+          return {
+            is_complete: false as const,
+            progress: data.progress!,
+            message: data.message!,
+          }
+        }
+        // 분석이 완료되고 결과가 나온 경우
+        else if (data.is_complete && data.result) {
+          const { id, name } = await this.trxSaveResult(user, data.result)
+
+          await this.setTaskCache(dto, user, id, name)
+
+          return {
+            is_complete: true as const,
+            result: { project: { id, name } },
+          }
+        } else {
+          throw new BadGatewayException()
+        }
+      }),
+    )
   }
 
-  // 상태 이벤트 처리
-  private async processStatusEvent(
-    event: any,
+  private async trxSaveResult(
     user: User,
-  ): Promise<WatchAnalysisStatusUsecaseRes> {
-    // 완료되지 않은 이벤트 처리
-    if (event.status !== 'completed') {
-      return this.buildProgressResponse(event)
-    }
+    result: NonNullable<WatchAnalysisStatusDto['result']>,
+  ): Promise<{ id: any; name: any }> {
+    return await this.trxService.startTrx(async (trxCtx) => {
+      const industryPath = `${result.ksicHierarchy.large.name}>${result.ksicHierarchy.medium.name}>${result.ksicHierarchy.small.name}>${result.ksicHierarchy.detail.name}`
 
-    // 완료된 이벤트 처리
-    try {
-      await this.saveAnalysisData(event.result, user)
-    } catch (error) {
-      // TODO: 저장 시 에러 응답 처리
-    }
-
-    return this.buildCompletionResponse(event.result)
-  }
-
-  // 진행 중인 상태 응답 생성
-  private buildProgressResponse(event: any): WatchAnalysisStatusUsecaseRes {
-    return {
-      is_complete: false,
-      progress: event.progress,
-      message: event.message,
-    }
-  }
-
-  // 완료 상태 응답 생성
-  private buildCompletionResponse(result: any): WatchAnalysisStatusUsecaseRes {
-    return {
-      is_complete: true,
-      result: {
-        project: {
-          id: result.project.id,
-          name: result.project.name,
-        },
-      },
-    }
-  }
-
-  // 스트림 에러 처리
-  private handleStreamError(error: any) {
-    if (error.status === 400) {
-      return throwError(() => new BadRequestException({ code: error.code }))
-    }
-    return throwError(() => new InternalServerErrorException())
-  }
-
-  // 분석 데이터 저장 (트랜잭션)
-  private async saveAnalysisData(result: any, user: User): Promise<void> {
-    await this.trxService.startTrx(async (ctx) => {
-      // 프로젝트 저장
-      const project = this.createProjectEntity(result, user)
-      const savedProject = await this.projectRepo
-        .saveOne({ project, ctx })
-        .catch(() => {
-          throw new BadGatewayException()
-        })
-
-      // 분석 개요 저장
-      const analysisOverview = this.createAnalysisOverviewEntity(
-        savedProject!,
-        result,
-      )
-      await this.analysisOverviewRepo
-        .saveOne({ analysisOverview, ctx })
-        .catch(() => {
-          throw new BadGatewayException()
-        })
-
-      // 시장 통계 저장
-      const marketStats = this.createMarketStatsEntity(result)
-      await this.marketStatsRepo.saveOne({ marketStats, ctx }).catch(() => {
+      // project 저장
+      const project = new Project({ userId: user.id, name: result.oneLineReview, industryPath })
+      const savedProject = await this.projectRepo.saveOne({ project: project, ctx: trxCtx }).catch(() => {
         throw new BadGatewayException()
       })
+
+      if (!savedProject) {
+        throw new BadGatewayException()
+      }
+
+      // analysisOverview 저장
+      const analysisOverview = this.mapAnalysisOverview(savedProject, result, industryPath)
+      const savedAnalysisOverview = await this.analysisOverviewRepo
+        .saveOne({ analysisOverview, ctx: trxCtx })
+        .catch(() => {
+          throw new BadGatewayException()
+        })
+
+      if (!savedAnalysisOverview) {
+        throw new BadGatewayException()
+      }
+
+      // marketStats 저장
+      const marketStats = this.mapMarketStats(industryPath, result)
+      const savedMarketStats = await this.marketStatsRepo.saveOne({ marketStats, ctx: trxCtx }).catch(() => {
+        throw new BadGatewayException()
+      })
+
+      if (!savedMarketStats) {
+        throw new BadGatewayException()
+      }
+
+      return {
+        id: savedProject.id!,
+        name: savedAnalysisOverview.summary,
+      }
     })
   }
 
-  // 프로젝트 엔티티 생성
-  private createProjectEntity(result: any, user: User): Project {
-    return new Project({
-      id: result.project.id || undefined,
+  private async setTaskCache(dto: WatchAnalysisStatusUsecaseDto, user: User, id: number, name: string) {
+    await this.cacheRepo.setTask({
+      taskId: dto.task_id,
       userId: user.id,
-      name: result.project.name,
-      industryPath: result.industryPath,
+      task: {
+        is_complete: true,
+        result: { project: { id, name } },
+      },
+      ttl: 60 * 2, // 2분
     })
   }
 
-  // 분석 개요 엔티티 생성
-  private createAnalysisOverviewEntity(
+  private mapMarketStats(industryPath: string, result: NonNullable<WatchAnalysisStatusDto['result']>) {
+    return new MarketStats({
+      industryPath,
+      score: result.scores.market,
+      domesticMarketTrends: result.marketSizeByYear.domestic.items.map((marketTrend) => ({
+        year: marketTrend.year,
+        volume: marketTrend.size.volume,
+        currency: marketTrend.size.currency,
+        growthRate: marketTrend.growthRate,
+        source: result.marketSizeByYear.domestic.source.source,
+      })),
+      globalMarketTrends: result.marketSizeByYear.global.items.map((marketTrend) => ({
+        year: marketTrend.year,
+        volume: marketTrend.size.volume,
+        currency: marketTrend.size.currency,
+        growthRate: marketTrend.growthRate,
+        source: result.marketSizeByYear.global.source.source,
+      })),
+      domesticAvgRevenue: {
+        amount: result.averageRevenue.domestic.volume,
+        currency: result.averageRevenue.domestic.currency,
+        source: result.averageRevenue.source,
+      },
+      globalAvgRevenue: {
+        amount: result.averageRevenue.global.volume,
+        currency: result.averageRevenue.global.currency,
+        source: result.averageRevenue.source,
+      },
+    })
+  }
+
+  private mapAnalysisOverview(
     savedProject: Project,
-    result: any,
-  ): AnalysisOverview {
+    result: NonNullable<WatchAnalysisStatusDto['result']>,
+    industryPath: string,
+  ) {
     return new AnalysisOverview({
       projectId: savedProject.id!,
-      summary: result.summary,
-      industryPath: result.industryPath,
-      review: result.review,
-      similarServicesScore: result.similarServicesScore,
-      limitationsScore: result.limitationsScore,
-      opportunitiesScore: result.opportunitiesScore,
-      similarServices: result.similarServices,
-      supportPrograms: result.supportPrograms,
-      targetMarkets: result.targetMarkets,
-      marketingStrategies: result.marketingStrategies,
-      businessModel: result.businessModel,
+      summary: result.oneLineReview,
+      industryPath,
+      review: result.oneLineReview,
+      similarServicesScore: result.scores.similarService,
+      limitationsScore: result.scores.risk,
+      opportunitiesScore: result.scores.opportunity,
+      similarServices: result.similarServices || [],
+      supportPrograms: result.supportPrograms.map((program) => ({
+        name: program.name,
+        organizer: program.organization,
+        startDate: program.period.startDate ? new Date(program.period.startDate) : undefined,
+        endDate: program.period.endDate ? new Date(program.period.endDate) : undefined,
+      })),
+      targetMarkets: result.targetAudience.map((targetAudience, i) => ({
+        order: i,
+        target: targetAudience.segment,
+        reason: targetAudience.reasons,
+        appeal: targetAudience.interestFactors,
+        onlineActivity: targetAudience.onlineActivities,
+        onlineChannels: targetAudience.onlineTouchpoints,
+        offlineChannels: targetAudience.offlineTouchpoints,
+      })),
+      businessModel: {
+        summary: result.businessModel.tagline,
+        valueProp: result.businessModel.valueDetails,
+        revenue: result.businessModel.revenueStructure,
+        investments: result.businessModel.investmentPriorities.map((investment, i) => ({
+          order: i,
+          section: investment.name,
+          description: investment.description,
+        })),
+      },
       opportunities: result.opportunities,
-      limitations: result.limitations,
-      teamRequirements: result.teamRequirements,
-      id: result.analysisOverviewId || undefined,
-    })
-  }
-
-  // 시장 통계 엔티티 생성
-  private createMarketStatsEntity(result: any): MarketStats {
-    return new MarketStats({
-      industryPath: result.industryPath,
-      score: result.marketStats.score || 0,
-      domesticMarketTrends: result.marketStats.domesticMarketTrends || [],
-      globalMarketTrends: result.marketStats.globalMarketTrends || [],
-      domesticAvgRevenue: result.marketStats.domesticAvgRevenue || {
-        amount: 0,
-        currency: Currency.KRW,
-        source: '',
-      },
-      globalAvgRevenue: result.marketStats.globalAvgRevenue || {
-        amount: 0,
-        currency: Currency.USD,
-        source: '',
-      },
-      id: result.marketStats.id || undefined,
+      limitations: result.limitations.map((limitation) => ({
+        category: limitation.category,
+        detail: limitation.details,
+        impact: limitation.impact,
+        solution: limitation.solution,
+      })),
+      teamRequirements: result.requiredTeam.roles.map((requirement) => ({
+        order: requirement.priority,
+        skill: requirement.skills,
+        title: requirement.title,
+        responsibility: requirement.responsibilities,
+      })),
     })
   }
 }

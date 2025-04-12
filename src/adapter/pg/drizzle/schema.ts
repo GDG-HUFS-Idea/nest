@@ -11,14 +11,7 @@ import {
   doublePrecision,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
-import {
-  UserPlan,
-  UserPermission,
-  SubscriptionStatus,
-  TermType,
-  Region,
-  Currency,
-} from 'src/shared/enum/enum'
+import { UserPlan, UserPermission, SubscriptionStatus, TermType, Region, Currency } from 'src/shared/enum/enum'
 
 const timestampColumns = {
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -34,10 +27,7 @@ export const users = pgTable('users', {
   email: varchar('email').notNull().unique(),
   name: varchar('name').notNull(),
   plan: varchar('plan').$type<UserPlan>().notNull(),
-  permissions: varchar('permissions')
-    .array()
-    .$type<UserPermission[]>()
-    .notNull(),
+  permissions: varchar('permissions').array().$type<UserPermission[]>().notNull(),
   ...timestampColumns,
 })
 
@@ -128,10 +118,7 @@ export const ideas = pgTable('ideas', {
     .notNull()
     .references(() => projects.id),
   problem: text('problem').notNull(),
-  motivation: text('motivation').notNull(),
-  features: text('features').notNull(),
-  method: text('method').notNull(),
-  deliverable: text('deliverable').notNull(),
+  solution: text('solution').notNull(),
   ...timestampColumns,
 })
 
@@ -153,7 +140,7 @@ export const analysisOverview = pgTable('analysis_overview', {
   similarServicesScore: integer('similar_services_score').notNull(),
   limitationsScore: integer('limitations_score').notNull(),
   opportunitiesScore: integer('opportunities_score').notNull(),
-  similarServices: jsonb('similar_services').$type<
+  similarServices: jsonb('similar_services').notNull().$type<
     {
       description: string
       logoUrl: string
@@ -162,68 +149,83 @@ export const analysisOverview = pgTable('analysis_overview', {
       summary: string
     }[]
   >(),
-  supportPrograms: jsonb('support_programs').$type<
+  supportPrograms: jsonb('support_programs').notNull().$type<
     {
       name: string
       organizer: string
-      url: string
-      startDate: Date
-      endDate: Date
+      // url: string
+      startDate?: Date
+      endDate?: Date
     }[]
   >(),
-  targetMarkets: jsonb('target_markets').$type<
+  targetMarkets: jsonb('target_markets').notNull().$type<
     {
       target: string
-      iconUrl: string
+      // iconUrl: string
       order: number
-      reasons: string[]
-      appeal: string[]
-      onlineActivity: string[]
-      onlineChannels: string[]
-      offlineChannels: string[]
+      reason: string
+      appeal: string
+      onlineActivity: string
+      onlineChannels: string
+      offlineChannels: string
+      // reasons: string[]
+      // appeal: string[]
+      // onlineActivity: string[]
+      // onlineChannels: string[]
+      // offlineChannels: string[]
     }[]
   >(),
-  marketingStrategies: jsonb('marketing_strategies').$type<
-    {
-      title: string
-      details: {
-        label: string
-        description: string
-      }[]
-    }[]
-  >(),
+  // marketingStrategies: jsonb('marketing_strategies').notNull().$type<
+  //   {
+  //     title: string
+  //     details: {
+  //       label: string
+  //       description: string
+  //     }[]
+  //   }[]
+  // >(),
   businessModel: jsonb('business_model')
+    .notNull()
     .$type<{
       summary: string
-      valueProp: {
-        content: string
-        details: {
-          label: string
-          description: string
-        }[]
-      }
-      revenue: {
-        label: string
-        description: string
-        details: string[]
-      }[]
+      valueProp: string
+      revenue: string
       investments: {
         order: number
         section: string
-        details: {
-          label: string
-          description: string
-        }[]
+        description: string
       }[]
+      // summary: string
+      // valueProp: {
+      //   content: string
+      //   details: {
+      //     label: string
+      //     description: string
+      //   }[]
+      // }
+      // revenue: {
+      //   label: string
+      //   description: string
+      //   details: string[]
+      // }[]
+      // investments: {
+      //   order: number
+      //   section: string
+      //   details: {
+      //     label: string
+      //     description: string
+      //   }[]
+      // }[]
     }>()
     .notNull(),
-  opportunities: jsonb('opportunities').$type<
-    {
-      title: string
-      description: string
-    }[]
-  >(),
-  limitations: jsonb('limitations').$type<
+  opportunities: varchar('opportunities').array().notNull(),
+  // opportunities: jsonb('opportunities').$type<
+  //   {
+  //     title: string
+  //     description: string
+  //   }[]
+  // >(),
+  limitations: jsonb('limitations').array().notNull().$type<
     {
       category: string
       detail: string
@@ -231,29 +233,32 @@ export const analysisOverview = pgTable('analysis_overview', {
       solution: string
     }[]
   >(),
-  teamRequirements: jsonb('team_requirements').$type<
+  teamRequirements: jsonb('team_requirements').array().notNull().$type<
     {
       order: number
-      role: string
-      skills: string[]
-      tasks: string[]
-      salaryMin: number
-      salaryMax: number
-      currency: string
+      title: string
+      skill: string
+      responsibility: string
     }[]
+    // {
+    //   order: number
+    //   role: string
+    //   skills: string[]
+    //   tasks: string[]
+    //   salaryMin: number
+    //   salaryMax: number
+    //   currency: string
+    // }[]
   >(),
   ...timestampColumns,
 })
 
-export const analysisOverviewRelations = relations(
-  analysisOverview,
-  ({ one }) => ({
-    project: one(projects, {
-      fields: [analysisOverview.projectId],
-      references: [projects.id],
-    }),
+export const analysisOverviewRelations = relations(analysisOverview, ({ one }) => ({
+  project: one(projects, {
+    fields: [analysisOverview.projectId],
+    references: [projects.id],
   }),
-)
+}))
 
 export const marketStats = pgTable('market_stats', {
   id: serial('id').primaryKey(),
