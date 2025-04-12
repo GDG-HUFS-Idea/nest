@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Post, Query, Sse, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, HttpCode, Inject, Post, Query, Sse, UseGuards } from '@nestjs/common'
 import { filter, map, mergeMap, takeWhile } from 'rxjs'
 import {
   GET_ANALYSIS_OVERVIEW_USECASE,
@@ -40,6 +40,7 @@ export class ProjectController {
   }
 
   @Post('/analyses/overview')
+  @HttpCode(202)
   @UseGuards(JwtGuard)
   async analyzeIdea(@Body() dto: AnalyzeIdeaUsecaseDto, @User() user: User) {
     return this.analyzeIdeaUsecase.exec(dto, user)
