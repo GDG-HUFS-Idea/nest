@@ -2,9 +2,7 @@ import { InferSelectModel } from 'drizzle-orm'
 import * as schema from '../drizzle/schema'
 import { Subscription } from 'src/domain/subscription'
 
-export const mapSubscription = (
-  subscription: InferSelectModel<typeof schema.subscriptions>,
-) =>
+export const mapSubscription = (subscription: InferSelectModel<typeof schema.subscriptions>) =>
   new Subscription({
     id: subscription.id,
     userId: subscription.userId,

@@ -5,28 +5,24 @@ import { WatchAnalysisStatusDto } from 'src/adapter/ai/dto/watchAnalysisStatus.d
 export const AI_SERVICE = Symbol('AI_SERVICE')
 
 export interface AiServicePort {
-  analyzeIdea(param: {
-    problem: string
-    motivation: string
-    features: string
-    method: string
-    deliverable: string
-  }): Promise<
-    | {
-        is_success: true
-        data: AnalyzeIdeaDto
-      }
+  analyzeIdea(param: { problem: string; solution: string }): Promise<
     | {
         is_success: false
         status: number
         code: number
       }
+    | {
+        is_success: true
+        data: AnalyzeIdeaDto
+      }
   >
 
-  watchAnalysisStatus(param: { task_id: string }): Observable<{
-    is_success: boolean
-    data?: WatchAnalysisStatusDto
-    status?: number
-    code?: string
-  }>
+  watchAnalysisStatus(param: { task_id: string }): Observable<
+    | {
+        is_success: false
+        status: number
+        code: number
+      }
+    | { is_success: true; data: WatchAnalysisStatusDto }
+  >
 }

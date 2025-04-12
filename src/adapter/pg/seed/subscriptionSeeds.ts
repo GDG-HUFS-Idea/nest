@@ -2,9 +2,7 @@ import { InferInsertModel } from 'drizzle-orm'
 import * as schema from '../drizzle/schema'
 import { SubscriptionStatus, UserPlan } from 'src/shared/enum/enum'
 
-export const subscriptionSeeds: InferInsertModel<
-  typeof schema.subscriptions
->[] = [
+export const subscriptionSeeds: InferInsertModel<typeof schema.subscriptions>[] = [
   {
     id: 1,
     userId: 1,
